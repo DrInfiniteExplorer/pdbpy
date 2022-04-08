@@ -28,7 +28,7 @@ def buffy(x, start, end):
 
 @structify
 # https://github.com/microsoft/microsoft-pdb/blob/1d60e041600117a5004de84baa960d2c953a6aa6/include/cvinfo.h#L1120
-class TypeProperty(Flaggy):
+class TypeProperties(Flaggy):
     packed                : (uint16_t, 1)
     ctor                  : (uint16_t, 1)
     overloaded_operators  : (uint16_t, 1)
@@ -44,6 +44,7 @@ class TypeProperty(Flaggy):
     intrinsic             : (uint16_t, 1) # intrinsic type, like __m128d
     mocom                 : (uint16_t, 2) # what is CV_MOCOM_UDT_e
 
+assert ctypes.sizeof(TypeProperties) == 2
 
 
 
@@ -63,20 +64,36 @@ LeafNumericToCType = {
     LeafID.REAL80  : ctypes.c_byte * 10,
     LeafID.REAL128 : ctypes.c_byte * 16,
 }
-def ReadNumeric(mem, offset):
 
-    leaf_id = uint16_t.from_buffer_copy(mem[offset : offset + 2]).value
+# same functionality different name
+# https://github.com/Microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/pdbdump/pdbdump.cpp#L2417-L2456
+
+# matching functionality and name but waddafack 
+# https://github.com/microsoft/microsoft-pdb/blob/e6b1dec61e154b568357537792e1d17a13525d5d/PDB/include/symtypeutils.h#L7-L51 ->
+#  https://github.com/fungosforks/Windows-NT-4.0-Source/blob/7a9a4aa4c3f950d0cd5512af11224084205e8fc0/private/sdktools/vctools/pdb/mre/mretype.cpp#L37-L94
+
+def ReadNumeric(mem, offset):
+    """
+    Reads a number from the memory offset, returns tuple of (post_read_offset, value).
+
+    Variable size number (or string? 🤔) encoding.
+    Reads a u16. If the read value is less than NUMERIC, return it directly.
+    Else reads [u]int[16|32], float, double, reals, or a variable string.
+    Strings and floats>65bits are returned as bytes-objects
+    """
+
+    number_or_leaf_id = uint16_t.from_buffer_copy(mem[offset : offset + 2]).value
     data_offset = offset + 2
 
-    match leaf_id:
+    match number_or_leaf_id:
         case int(id) if id < LeafID.NUMERIC:
-            return data_offset, leaf_id
+            return data_offset, number_or_leaf_id
         case LeafID.VARSTRING:
             asd()
             length = uint16_t.from_buffer_copy(mem[data_offset : data_offset + 2])
             return data_offset + 2 + length, mem[data_offset + 2 : data_offset + 2 + length]
         case _:
-            typ = LeafNumericToCType.get(leaf_id)
+            typ = LeafNumericToCType.get(number_or_leaf_id)
             #print(typ)
             #asd()
 
@@ -84,44 +101,463 @@ def ReadNumeric(mem, offset):
             value = typ.from_buffer_copy(mem[data_offset : data_offset + size])
             return data_offset + size, value
     
-    raise ValueError(f"How did we get here? {offset}, {leaf_id}, {data_offset}")
+    raise ValueError(f"How did we get here? {offset}, {number_or_leaf_id}, {data_offset}")
 
+def ReadString(mem, offset, leafy):
+    """
+    Reads a string and returns byte (though is always UTF8????)
+
+    Returns (post_read_offset, string)
+
+    Depending on the input leaf type thing, is either a zero-terminated string,
+     or a uint8_t followed by number of bytes specified in the uint8_t.
+
+    """
+    if leafy > LeafID.ST_MAX:
+        #print("sZ string")
+        # read until zero-terminator
+
+        # TODO seriously consider rewriting to use file-like interface with seeking and page-caching
+        #  instead of "fully random access through not-quite-memory-like interface"
+        stuff = []
+        zero = b'\x00'
+        while True:
+            byte = buffy(mem, offset, offset+1)
+            offset += 1
+            if byte == zero:
+                joined = b''.join(stuff)
+                try:
+                    return offset, joined.decode('utf8')
+                except UnicodeDecodeError as e:
+                    return offset, joined
+            stuff.append(byte)
+    else:
+        # read u8, then that number of bytes
+        #print("Pascal string")
+        count = uint8_t.from_buffer_copy(buffy(mem, offset, offset+1)).value
+        post_read_offset = offset + 1
+        return post_read_offset+count, bytes(buffy(mem, post_read_offset, post_read_offset+count)).decode('utf8')
 
 def SzBytesToString(data):
     return data[:data.index(0)].decode('utf8')
 
 
-@structify
-# https://github.com/microsoft/microsoft-pdb/blob/1d60e041600117a5004de84baa960d2c953a6aa6/include/cvinfo.h#L1175
-class PDBTypesType(Structy):    
-    size_bytes : uint16_t
-    record_type: uint16_t # called 'leaf' by dudes but they are pretty far from leafs most of the time 🤔
+from enum import IntEnum
 
-@record(LeafID.CLASS, LeafID.STRUCTURE, LeafID.INTERFACE)
+class PackedStructy(Structy):
+    _pack_ = 1
+
+class MethodPropertiesEnum(IntEnum):
+    vanilla     = 0
+    virtual     = 1
+    static      = 2
+    friend      = 3
+    intro       = 4
+    purevirtual = 5
+    pureintro   = 6
+
+class PointerTypeEnum(IntEnum):
+    NEAR         = 0x00
+    FAR          = 0x01
+    HUGE         = 0x02
+    BASE_SEG     = 0x03
+    BASE_VAL     = 0x04
+    BASE_SEGVAL  = 0x05
+    BASE_ADDR    = 0x06
+    BASE_SEGADDR = 0x07
+    BASE_TYPE    = 0x08
+    BASE_SELF    = 0x09
+    NEAR32       = 0x0a
+    FAR32        = 0x0b
+    _64          = 0x0c
+    UNUSEDPTR    = 0x0d
+
+class PointerModeEnum(IntEnum):
+    Normal              = 0x00
+    OldGenericReference = 0x01
+    LValueReference     = 0x01
+    Member              = 0x02
+    MemberFunction      = 0x03
+    RValueReference     = 0x04
+    RESERVED            = 0x05
+
+class PointerMemberEnum(IntEnum):
+    Undef             = 0x00 # not specified (pre VC8)
+    Data_Single       = 0x01 # member data, single inheritance
+    Data_Multiple     = 0x02 # member data, multiple inheritance
+    Data_Virtual      = 0x03 # member data, virtual inheritance
+    Data_General      = 0x04 # member data, most general
+    Function_Single   = 0x05 # member function, single inheritance
+    Function_Multiple = 0x06 # member function, multiple inheritance
+    Function_Virtual  = 0x07 # member function, virtual inheritance
+    Function_General  = 0x08 # member function, most general
+
 @structify
-class TypeStructLike(PDBTypesType):
-    element_count: uint16_t
-    property_ : TypeProperty
-    field : type_index
-    derived : type_index
-    vshape: type_index
+class FieldAttributes(Flaggy):
+    access      : (uint8_t, 2)
+    mprop       : (uint8_t, 3) # MethodPropertiesEnum
+    pseudo      : (uint8_t, 1)
+    noinherit   : (uint8_t, 1)
+    noconstruct : (uint8_t, 1) #cant be constructed
+    compgenx    : (uint8_t, 1)
+    sealed      : (uint8_t, 1) # final
+    unused      : (uint8_t, 6)
+
+assert ctypes.sizeof(FieldAttributes) == 2
+
+@structify
+class PointerAttributes(Flaggy):
+    kind      : (uint32_t, 5) #PointerTypeEnum
+    mode      : (uint32_t, 3) #PointerModeEnum
+
+
+    flat32    : (uint32_t, 1)
+    volatile  : (uint32_t, 1)
+    const     : (uint32_t, 1)
+    unaligned : (uint32_t, 1)
+    restrict  : (uint32_t, 1)
+    
+    size      : (uint32_t, 6)
+
+    ismocom   : (uint32_t, 1)
+    islref    : (uint32_t, 1)
+    isrred    : (uint32_t, 1)
+
+    unused    : (uint32_t, 10)
+
+assert ctypes.sizeof(PointerAttributes) == 4, ctypes.sizeof(PointerAttributes)
+
+
+@structify
+class FunctionAttributes(Flaggy):
+    cxxreturnudt : (uint8_t, 1)
+    ctor         : (uint8_t, 1)
+    ctorvbase    : (uint8_t, 1)
+    unused       : (uint8_t, 5)
+
+assert ctypes.sizeof(FunctionAttributes) == 1
+
+
+
+@record(LeafID.MEMBER, LeafID.MEMBER_ST, LeafID.STMEMBER, LeafID.STMEMBER_ST)
+@structify
+class Member(PackedStructy):
+    record_type      : uint16_t
+    field_attributes : FieldAttributes
+    field_type       : type_index
+    #offset
+    #name
+
+    #static
+
+    @classmethod
+    def from_memory(cls, mem, offset, record_size : 'Optional[int]'):
+        my_size = ctypes.sizeof(cls)
+        self = cls.from_buffer_copy(buffy(mem, offset, offset + my_size))
+        self.addr = offset
+
+        post_read_offset = offset + my_size
+        self.static = self.record_type in (LeafID.STMEMBER, LeafID.STMEMBER_ST)
+
+        if not self.static:
+            post_read_offset, self.offset = ReadNumeric(mem, post_read_offset)
+        post_read_offset, self.name = ReadString(mem, post_read_offset, self.record_type)
+
+        return post_read_offset, self
+
+
+
+
+@record(LeafID.MFUNCTION)
+@structify
+class MemberFunction(PackedStructy):
+    record_type     : uint16_t
+    return_type     : type_index
+    class_type      : type_index
+    this_ptr_type   : type_index
+    call_convention : uint8_t
+    attributes      : FunctionAttributes
+    parameter_count : uint16_t
+    arg_list        : type_index
+    this_adjustment : uint32_t
+
+
+    @classmethod
+    def from_memory(cls, mem, offset, record_size : 'Optional[int]'):
+        my_size = ctypes.sizeof(cls)
+        self = cls.from_buffer_copy(buffy(mem, offset, offset + my_size))
+        self.addr = offset
+
+        post_read_offset = offset + my_size
+
+        return post_read_offset, self
+
+@record(LeafID.ONEMETHOD)
+@structify
+class OneMethod(PackedStructy):
+    record_type     : uint16_t
+    attributes      : FieldAttributes
+    method_type     : type_index
+    # vtable_offset
+    # name
+
+
+    @classmethod
+    def from_memory(cls, mem, offset, record_size : 'Optional[int]'):
+        my_size = ctypes.sizeof(cls)
+        self = cls.from_buffer_copy(buffy(mem, offset, offset + my_size))
+        self.addr = offset
+    
+        post_read_offset = offset + my_size
+        if self.attributes.mprop in (MethodPropertiesEnum.intro, MethodPropertiesEnum.pureintro):
+            self.vtable_offset = uint32_t.from_buffer_copy(buffy(mem, post_read_offset, post_read_offset+4))
+            post_read_offset += 4
+        post_read_offset, self.name = ReadString(mem, post_read_offset, self.record_type)
+
+        return post_read_offset, self
+
+
+
+@record(LeafID.BCLASS, LeafID.INTERFACE)
+@structify
+class BaseClass(PackedStructy):
+    record_type     : uint16_t
+    attributes      : FieldAttributes
+    index           : type_index
+    # offset
+
+    @classmethod
+    def from_memory(cls, mem, offset, record_size : 'Optional[int]'):
+        my_size = ctypes.sizeof(cls)
+        self = cls.from_buffer_copy(buffy(mem, offset, offset + my_size))
+        self.addr = offset
+        post_read_offset = offset + my_size
+
+        post_read_offset, self.offset = ReadNumeric(mem, post_read_offset)
+
+        return post_read_offset, self
+
+
+@record(LeafID.VFUNCTAB)
+@structify
+class VFuncTab(PackedStructy):
+    record_type     : uint16_t
+    padding         : uint16_t
+    vtable_ptr      : type_index
+
+    @classmethod
+    def from_memory(cls, mem, offset, record_size : 'Optional[int]'):
+        my_size = ctypes.sizeof(cls)
+        self = cls.from_buffer_copy(buffy(mem, offset, offset + my_size))
+        self.addr = offset
+        post_read_offset = offset + my_size
+
+        return post_read_offset, self
+
+
+@record(LeafID.POINTER)
+@structify
+class Pointer(PackedStructy):
+
+    record_type    : uint16_t
+    reference_type : type_index
+    attributes     : PointerAttributes
+
+    @classmethod
+    def from_memory(cls, mem, offset, record_size : 'Optional[int]'):
+        my_size = ctypes.sizeof(cls)
+        self = cls.from_buffer_copy(buffy(mem, offset, offset + my_size))
+        self.addr = offset
+        post_read_offset = offset + my_size
+
+        # TODO
+        # size according to https://llvm.org/docs/PDB/CodeViewTypes.html        
+        # but https://pierrelib.pagesperso-orange.fr/exec_formats/MS_Symbol_Type_v1.0.pdf page 28
+        # and https://github.com/moyix/pdbparse/blob/master/pdbparse/tpi.py#L896
+        # and https://github.com/willglynn/pdb/blob/master/src/tpi/data.rs#L209-L224
+        # all kinda disagree or something. yolo?
+        
+        #print(self.attributes.mode, (PointerModeEnum.Member, PointerModeEnum.MemberFunction))
+        #print(self.attributes.mode in (PointerModeEnum.Member, PointerModeEnum.MemberFunction))
+        if self.attributes.mode in (PointerModeEnum.Member, PointerModeEnum.MemberFunction):
+            asd()
+            return post_read_offset + 2, self
+        
+        return post_read_offset, self
+
+
+
+@record(LeafID.PROCEDURE)
+@structify
+class Procedure(PackedStructy):
+    record_type     : uint16_t
+    return_type     : type_index
+    call_convention : uint8_t
+    func_attributes : FunctionAttributes
+    parameter_count : uint16_t
+    arg_list        : type_index
+
+
+    @classmethod
+    def from_memory(cls, mem, offset, record_size : 'Optional[int]'):
+        my_size = ctypes.sizeof(cls)
+        self = cls.from_buffer_copy(buffy(mem, offset, offset + my_size))
+        self.addr = offset
+        post_read_offset = offset + my_size
+
+        return post_read_offset, self
+
+@record(LeafID.MODIFIER)
+@structify
+class Modifier(PackedStructy):
+    record_type     : uint16_t
+    reference       : type_index
+    flags           : uint16_t
+
+    @classmethod
+    def from_memory(cls, mem, offset, record_size : 'Optional[int]'):
+        my_size = ctypes.sizeof(cls)
+        self = cls.from_buffer_copy(buffy(mem, offset, offset + my_size))
+        self.addr = offset
+        post_read_offset = offset + my_size
+
+        return post_read_offset, self
+
+@record(LeafID.ENUM, LeafID.ENUM_ST)
+@structify
+class Enum(PackedStructy):
+    _pack_ = 2
+    record_type     : uint16_t
+    count           : uint16_t
+    properties      : TypeProperties
+    underlying_type : type_index
+    fields          : type_index
+    # name
+    # unique_name
+
+    @classmethod
+    def from_memory(cls, mem, offset, record_size : 'Optional[int]'):
+        my_size = ctypes.sizeof(cls)
+        self = cls.from_buffer_copy(buffy(mem, offset, offset + my_size))
+        self.addr = offset
+        post_read_offset = offset + my_size
+
+        post_read_offset, self.name = ReadString(mem, post_read_offset, self.record_type)
+        if self.properties.has_unique_name:
+            post_read_offset, self.unique_name = ReadString(mem, post_read_offset, self.record_type)
+        
+        #print(record_size)
+        #print("!!", bytes(buffy(mem, offset, offset+record_size)))
+        #print(post_read_offset, bytes(buffy(mem, post_read_offset, post_read_offset+1)))
+
+        return post_read_offset, self
+
+assert Enum.underlying_type.offset == 6
+
+
+@record(LeafID.ENUMERATE, LeafID.ENUMERATE_ST)
+@structify
+class Enumerate(PackedStructy):
+    record_type     : uint16_t
+    attributes      : FieldAttributes
+    #value           : uint16_t # should be ReadNumeric?
+    # name
+
+    @classmethod
+    def from_memory(cls, mem, offset, record_size : 'Optional[int]'):
+        my_size = ctypes.sizeof(cls)
+        self = cls.from_buffer_copy(buffy(mem, offset, offset + my_size))
+        self.addr = offset
+        post_read_offset = offset + my_size
+
+        post_read_offset, self.value = ReadNumeric(mem, post_read_offset)
+        post_read_offset, self.name  = ReadString(mem, post_read_offset, self.record_type)
+
+        return post_read_offset, self
+
+@record(LeafID.FIELDLIST)
+@structify
+class FieldList(PackedStructy):
+    record_type     : uint16_t
+
+    @classmethod
+    def from_memory(cls, mem, offset, record_size : int):
+
+        assert isinstance(record_size, int), "Parsing a field list requires knowledge of how large the total record is!"
+
+        my_size = ctypes.sizeof(cls)
+        self = cls.from_buffer_copy(buffy(mem, offset, offset + my_size))
+        self.addr = offset
+        post_read_offset = offset + my_size
+
+        post_record = offset + record_size
+
+        self.members = []
+
+        while post_read_offset < post_record:
+
+            post_read_offset, member = ParseType(mem, post_read_offset)
+            self.members = [member]
+            #print(f"Member is {member}")
+            #print(f"{post_read_offset} - {post_record}")
+
+            # paddy padd!
+            if post_read_offset < post_record:
+                paddy = extract_padding(mem, post_read_offset, required=False)
+                print(f"Padding {post_read_offset} with {paddy}")
+                post_read_offset += paddy
+
+
+        return post_read_offset, self
+
+
+
+
+@record(LeafID.CLASS, LeafID.STRUCTURE, LeafID.INTERFACE, LeafID.CLASS_ST, LeafID.STRUCTURE_ST, LeafID.INTERFACE)
+@structify
+class TypeStructLike(PackedStructy):
+    record_type   : uint16_t
+    element_count : uint16_t
+    properties    : TypeProperties
+    field         : type_index     # the record which contains the field list (ie. members n methods)
+    derived       : type_index
+    vshape        : type_index
     # followed by "data describing length of structure in bytes and name"? 🤔
+
+    def __init__(self):
+        self.addr = None
+        self.struct_size_bytes = None
+        self.name = None
+        self.unique_name = None
     
     @classmethod
-    def from_memory(cls, mem, offset):
+    def from_memory(cls, mem, offset, record_size : 'Optional[int]'):
+
+
         header_sizeof = ctypes.sizeof(cls)
         self = cls.from_buffer_copy(buffy(mem, offset , offset + header_sizeof))
+        self.addr = offset
         #print(self)
 
         # Name reading from https://github.com/microsoft/microsoft-pdb/blob/e6b1dec61e154b568357537792e1d17a13525d5d/PDB/include/symtypeutils.h#L24        
         #print(bytes(mem[offset : offset + header_sizeof : 'copy']))
         #print(bytes(mem[offset : offset + self.size_bytes : 'copy']))
         #print(bytes(mem[offset + header_sizeof : offset + self.size_bytes: 'copy']))
-        name_offset, x = ReadNumeric(mem, offset + header_sizeof)
+        name_offset, self.struct_size_bytes = ReadNumeric(mem, offset + header_sizeof)
         #print(f"x={x}")
-        name_data = buffy(mem, name_offset , offset + self.size_bytes)
+        #name_data = buffy(mem, name_offset , offset + self.size_bytes)
         #print(SzBytesToString(bytes(name_data)))
-        return
+        
+        post_read_offset, name_data = ReadString(mem, name_offset, self.record_type)
+        self.name = name_data
+        if self.properties.has_unique_name:
+            post_read_offset, self.unique_name = ReadString(mem, post_read_offset, self.record_type)
+            #print(self.unique_name)
+        #print(self.name)
+
+
+        return post_read_offset, self
+    
 
 
         
@@ -160,56 +596,139 @@ class PDBTypeStreamHeader(ctypes.Structure):
     def __repr__(self):
         return str({name:getattr(self, name) for name,_ in self._fields_})
 
+@structify
+# https://github.com/microsoft/microsoft-pdb/blob/1d60e041600117a5004de84baa960d2c953a6aa6/include/cvinfo.h#L1175
+class CodeViewRecordHeader(PackedStructy):    
+    """
+    """
+    size_bytes : uint16_t
+    record_type: uint16_t # called 'leaf' by dudes but they are pretty far from leafs most of the time 🤔
+
+
+def extract_padding(mem, offset, required : bool):
+    next_byte = uint8_t.from_buffer_copy(buffy(mem, offset, offset+1)).value
+    matches_format = next_byte > 0xf0
+    if not matches_format:
+        assert not required, f"Pad byte not in expected 0xF? -format: 0x{next_byte:02X}"
+        return 0
+    padding = next_byte & 0xf
+    return padding
+
+
+
+def ParseType(mem, record_content_offset, record_type = None, record_size_bytes = None):
+    if record_type is None:
+        record_type = uint16_t.from_buffer_copy(mem[record_content_offset : record_content_offset + 2]).value
+
+    print(f"Record type: {record_type} | 0x{record_type:X}")
+    
+    
+    typ = records_by_id.get(record_type, None)
+    if typ is None:
+        print(f"Can't deal with {LeafID(record_type).name} yet")
+        return
+    
+    post_read_offset, parsed = typ.from_memory(mem, record_content_offset, record_size = record_size_bytes)
+    print(parsed)
+
+    padding = 0
+    if record_size_bytes is not None:
+        expected_end = record_content_offset + record_size_bytes
+        assert post_read_offset <= expected_end, f"READ TOO FAR! Read to {post_read_offset}, ought to have read to {expected_end}, which is {post_read_offset-expected_end} too much!"
+        if post_read_offset != expected_end:
+            print(f"Read to {post_read_offset}, expected to land at {expected_end}")
+            padding = extract_padding(mem, post_read_offset, required=True)
+            assert post_read_offset + padding == expected_end, f"{post_read_offset} is not {record_content_offset + record_size_bytes} as was expected, we didn't read the previous record correctly???"
+            print(f"Padding-bytes made short work if the inconsistency")
+    
+    return post_read_offset + padding, parsed
+
+
+def take(count, it):
+    if count == 'all':
+        yield from it
+    for _ in range(count):
+        yield next(it)
+
 
 class PdbTypeStream:
-    def __init__(self, file: MultiStreamFileStream):
+    def __init__(self, file: MultiStreamFileStream, lookup_skip = 10, upfront_memory = False):
+        """
+        lookup_skip sets the "skip" value when adding offsets to the speedreader-cache;
+         Every `lookup_skip` pairs of (type_index, stream_offset) is added to a cache.
+        """
         self.file = file
-        stuff = PDBTypeStreamHeader.from_buffer_copy(self.file[:ctypes.sizeof(PDBTypeStreamHeader)])
-        #self.file = file[::'copy']
-        #print(len(self.file))
-        #for name, _ in stuff._fields_:
-        #    setattr(self, name, getattr(stuff, name))
+        header = PDBTypeStreamHeader.from_buffer_copy(self.file[:ctypes.sizeof(PDBTypeStreamHeader)])
+        if upfront_memory:
+            self.file = file[::'copy']
 
-        self.header = stuff
-        self.num_types = stuff.ti_max - stuff.ti_min
+        self.header = header
+        self.num_types = header.ti_max - header.ti_min
 
-        pos = ctypes.sizeof(stuff)
-        type_size = ctypes.sizeof(PDBTypesType)
-        extra_bytes_to_advance = PDBTypesType.size_bytes.size
-        #for info in self.iter_ti_headers():
-        #    print(info)
+        self.lookup_skip = lookup_skip
+        self.lookup = []
         
-        #print(self.get_ti_info(self.header.ti_min+6))
+        print()
 
-        for stream_offset, info in self.iter_ti_headers():
-            #print(info)
-            typ = records_by_id.get(info.record_type, None)
-            if typ is not None:
-                #print(stream_offset, info)
-                a = typ.from_memory(self.file, stream_offset)
-                #print(a)
-                #asd()
-                ...
+        for stream_offset, info in take(3, self.iter_ti_headers(self.header.ti_min)):
+            print(f"{stream_offset} - {info}")
+
+
+        i=0
+        for stream_offset, info in take('all', self.iter_ti_headers(self.header.ti_min)):
+            print(f"Type index: {self.header.ti_min+i:x}")
+            i+=1
+            ParseType(self.file, stream_offset+2, record_type=info.record_type, record_size_bytes = info.size_bytes)
+            print()
 
         
     
-    def get_ti_info(self, TI : int):
-        # TODO: Use lookup or something instead of iterating until @target.
-        assert TI >= self.header.ti_min
-        assert TI < self.header.ti_max
-        it = iter(self.iter_ti_headers())
-        info = None
-        for _ in range(TI - self.header.ti_min):
-            info = next(it)
-        return info
+    def get_ti_info(self, TI : type_index):
+        return next(self.iter_ti_headers(start_ti = TI))
+    
+    def get_closest_start_pos_for_ti(self, ti) -> 'tuple(type_index, int)':
+        """
+        Returns the closest stored lookup position for a given type_index.
 
-    def iter_ti_headers(self):
-        pos = ctypes.sizeof(PDBTypeStreamHeader)
-        type_size = ctypes.sizeof(PDBTypesType)
-        extra_bytes_to_advance = PDBTypesType.size_bytes.size
-        for idx in range(self.num_types):
-            info = PDBTypesType.from_buffer_copy(buffy(self.file, pos,  pos + type_size))
-            yield pos, info
+        Returns a (idx, stream_byte_offset) with the `idx` as 0-start, not a type_index
+        """
+        assert ti >= self.header.ti_min
+        assert ti < self.header.ti_max
+
+        lookup_len = len(self.lookup)
+        if lookup_len == 0:
+            return 0, ctypes.sizeof(PDBTypeStreamHeader)
+
+        idx = ti - self.header.ti_min
+        lookup_idx = idx // self.lookup_skip
+        
+        lookup_idx = min(lookup_idx, lookup_len)
+        pos = self.lookup[lookup_idx]
+        return lookup_idx * self.lookup_skip, pos
+
+
+    def iter_ti_headers(self, start_ti : type_index = None):
+        type_size = ctypes.sizeof(CodeViewRecordHeader)
+        extra_bytes_to_advance = CodeViewRecordHeader.size_bytes.size
+        if start_ti is None:
+            start_index = 0
+            yield_start_index = 0
+            pos = ctypes.sizeof(PDBTypeStreamHeader)
+        else:
+            assert start_ti >= self.header.ti_min
+            assert start_ti < self.header.ti_max
+            yield_start_index = start_ti - self.header.ti_min
+            start_index, pos = self.get_closest_start_pos_for_ti(start_ti)
+            
+        for idx in range(start_index, self.num_types):
+            if idx % self.lookup_skip == 0:
+                lookup_idx = idx // self.lookup_skip
+                lookup = self.lookup
+                if len(lookup) <= lookup_idx:
+                    self.lookup.append(pos)
+            info = CodeViewRecordHeader.from_buffer_copy(buffy(self.file, pos,  pos + type_size))
+            if idx >= yield_start_index:
+                yield pos, info
             pos += extra_bytes_to_advance + info.size_bytes
 
     def __repr__(self):

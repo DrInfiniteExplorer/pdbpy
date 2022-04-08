@@ -70,7 +70,9 @@ class Structy(ctypes.Structure):
     Helper baseclass that prints contents of fields in repr (no py members tho)
     """
     def __repr__(self):
-        return str({stuff[0] : getattr(self, stuff[0]) for stuff in self._fields_})
+        names = [f[0] for f in self._fields_]
+        names += list(self.__dict__.keys())
+        return type(self).__name__ + str({name : getattr(self, name) for name in names})
 
 
 class Flaggy(ctypes.Structure):
@@ -86,4 +88,21 @@ class Flaggy(ctypes.Structure):
             if val:
                 stuff.append(f"{name}" if size == 1 else f"{name}({val})")
         return " | ".join(stuff)
+
+
+# https://stackoverflow.com/questions/23131237/python-ctype-bitfields-get-bitfield-location
+def DebugPrintBitfield(Type):
+    for field_descr in Type._fields_:        
+        name = field_descr[0]
+        field = getattr(Type, name)    
+        bfield_bits = field.size >> 16    
+        if bfield_bits:
+            start = 8 * field.offset + field.size & 0xFFFF
+            stop = start + bfield_bits
+        else:
+            start = 8 * field.offset
+            stop = start + 8 * field.size
+        print("{:>10s}: bits {:>2d}:{:>2d}".format(
+            name, start, stop))
+
 

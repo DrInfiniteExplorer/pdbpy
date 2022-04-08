@@ -197,21 +197,36 @@ class MultiStreamFile:
         page_size = self.page_size
 
         start_page = byte_offset // page_size
+        end_page = (byte_offset + byte_count) // page_size
         byte_offset = byte_offset % page_size
+
+        if start_page == end_page:
+            start = page_list[start_page] * page_size + byte_offset
+            return (self.mem[start : start + byte_count],)
 
         pages_to_read = page_list[start_page:]
 
         # TODO: Massage pages_to_read to be a zip of (page_start, page_size) to merge continuous page numbers
 
 
-        bytes_left = len(pages_to_read) * page_size - byte_offset if byte_count is None else byte_count
+        if byte_count is None:
+            bytes_left = len(pages_to_read) * page_size - byte_offset 
+        else:
+            bytes_left = byte_count
+        #bytes_left = len(pages_to_read) * page_size - byte_offset if byte_count is None else byte_count
         
-        if debug:
-            print()
-            print(f"Start page: {start_page}")
-            print(f"Byte offset: {byte_offset}")
-            print(f"Pages: {pages_to_read}")
-            print(f"Bytes to read: {bytes_left}")
+        #if debug:
+        #    print()
+        #    print(f"Start page: {start_page}")
+        #    print(f"Byte offset: {byte_offset}")
+        #    print(f"Pages: {pages_to_read}")
+        #    print(f"Bytes to read: {bytes_left}")
+
+
+
+        
+        #if debug:
+        #    print()
 
         areas = []
         page_list_iter = iter(pages_to_read)
@@ -229,18 +244,18 @@ class MultiStreamFile:
 
 
         while bytes_left > 0:
-            if debug: print()       
+            #if debug: print()       
             page_num = next(page_list_iter)
-            if debug: print(f"Page num: {page_num}")
+            #if debug: print(f"Page num: {page_num}")
             addr = page_size * page_num
             read_amount = min(byte_offset + bytes_left, page_size) - byte_offset
-            if debug: print(f"Read amount: {read_amount}")
-            if debug: print(f"Reading from {byte_offset} to {byte_offset + read_amount}")
+            #if debug: print(f"Read amount: {read_amount}")
+            #if debug: print(f"Reading from {byte_offset} to {byte_offset + read_amount}")
             area = self.mem[addr + byte_offset : addr + byte_offset + read_amount]
             areas.append(area)
             byte_offset = 0
             bytes_left -= read_amount
-        if debug: print()
+        #if debug: print()
         return areas
 
     def read_pages(self, page_list: 'List[int]', yeet=None, byte_offset = 0, byte_count=None) -> bytes :
