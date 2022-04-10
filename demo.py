@@ -10,7 +10,7 @@ from pdbpy.streams.pdbtype import PdbTypeStream
 def main():
     import sys
     assert len(sys.argv) == 2, "Accepts only a path to a pdb as argument."
-    with open(sys.argv[1], "rb+") as f:
+    with open(sys.argv[1], "rb") as f:
         msf = MultiStreamFile(f)
         stream = msf.get("Directory")
 
@@ -23,7 +23,7 @@ def main():
         print(info_stream)
 
         type_info_file = pdb_stream_directory.get_stream_by_index(2)
-        type_stream = PdbTypeStream(type_info_file)
+        type_stream = PdbTypeStream(type_info_file, upfront_memory=False)
         #print(type_stream)
 
 

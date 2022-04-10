@@ -1,6 +1,8 @@
 
 import ctypes
 
+from enum import IntEnum
+
 class BasicWrapperBase(ctypes.Structure):
     pass
 
@@ -65,12 +67,23 @@ def structify(cls):
 
     return cls
 
+#TODO: Memoize???
+def get_name_adjusted_fields(struct):
+    fields = list(struct._fields_)
+    for idx, field in enumerate(fields):
+        name = field[0]
+        if name.startswith('_') and hasattr(struct, name[1:]):
+            fields[idx] = (name[1:], *field[1:])
+    return fields
+
+
+
 class Structy(ctypes.Structure):
     """
     Helper baseclass that prints contents of fields in repr (no py members tho)
     """
     def __repr__(self):
-        names = [f[0] for f in self._fields_]
+        names = [f[0] for f in get_name_adjusted_fields(self)]
         names += list(self.__dict__.keys())
         return type(self).__name__ + str({name : getattr(self, name) for name in names})
 
@@ -81,11 +94,13 @@ class Flaggy(ctypes.Structure):
     """
     def __repr__(self):        
         stuff = []
-        for s in self._fields_:
+        for s in get_name_adjusted_fields(self):
             name = s[0]
             size = s[2]
             val = getattr(self, name)
             if val:
+                if isinstance(val, IntEnum):
+                    val = f"{val.name}={val}"
                 stuff.append(f"{name}" if size == 1 else f"{name}({val})")
         return " | ".join(stuff)
 
