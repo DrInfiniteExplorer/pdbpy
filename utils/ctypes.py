@@ -33,6 +33,10 @@ uint16_t = ctypes.c_uint16
 uint32_t = ctypes.c_uint32
 uint64_t = ctypes.c_uint64
 
+float32_t = ctypes.c_float
+float64_t = ctypes.c_double
+
+
 def structify(cls):
     """
     A decorator that can turn simpler class definitions into the more line-noisy
@@ -62,7 +66,7 @@ def structify(cls):
         rest = data[1]
         rest = rest if isinstance(rest, tuple) else (rest,)
         fields.append((name, *rest))
-    print(fields)
+    #print(fields)
     cls._fields_ = fields
 
     return cls

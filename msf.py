@@ -149,7 +149,7 @@ class MultiStreamFile:
 
         self.header = BigHeader.from_buffer_copy(self.mem)
         assert self.header.magic == b"Microsoft C/C++ MSF 7.00\r\n\x1a\x44\x53", f"Can only deal with 'big' header type and 'MSF 7.0' version, got {self.header.magic}"
-        print(f"page size: {self.header.page_size}")
+        #print(f"page size: {self.header.page_size}")
 
         for name, type in self.header._fields_[1:]:
             setattr(self, name, getattr(self.header, name))
@@ -158,23 +158,23 @@ class MultiStreamFile:
         # How many pages do we need, to make an index of all those pages?
         directory_indices_count = self.pages_to_contain_bytes(self.directory_size_in_bytes)
 
-        print(f"Directory size: {self.directory_size_in_bytes}")
-        print(f"Directory indices count: {directory_indices_count}")
+        #print(f"Directory size: {self.directory_size_in_bytes}")
+        #print(f"Directory indices count: {directory_indices_count}")
 
         # How many pages are needed to store the index above?
         # Every index is 4 bytes, so we need pages for index_length*4 bytes
         page_count_to_contain_directory_page_indices = self.pages_to_contain_bytes(4 * directory_indices_count)
-        print(f"Page count to contain directory page indices: {page_count_to_contain_directory_page_indices}")
+        #print(f"Page count to contain directory page indices: {page_count_to_contain_directory_page_indices}")
 
         SizeOfBigHeader = ctypes.sizeof(BigHeader)
         list_of_pages_that_contain_directory_indices = (uint32_t * page_count_to_contain_directory_page_indices).from_buffer_copy(self.mem, SizeOfBigHeader)
-        print(f"Page numbers that contain directory indices: {list(list_of_pages_that_contain_directory_indices)}")
+        #print(f"Page numbers that contain directory indices: {list(list_of_pages_that_contain_directory_indices)}")
 
         # Read all pages with directory indices
         directory_page_indices_data = self.read_pages(list_of_pages_that_contain_directory_indices, byte_count = 4 * directory_indices_count)
 
         directory_page_indices = (uint32_t * directory_indices_count).from_buffer_copy(directory_page_indices_data)
-        print(f"Directory page indices: {list(directory_page_indices)}")
+        #print(f"Directory page indices: {list(directory_page_indices)}")
 
         self.pdb_root_stream_pages = list(directory_page_indices)
 

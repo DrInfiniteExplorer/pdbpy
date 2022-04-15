@@ -11,11 +11,11 @@ class StreamDirectoryStream:
 
         stream_count = uint32_t.from_buffer_copy(file[:4]).value
         self.stream_count = stream_count
-        print(f"Streams in PDB: {stream_count}")
+        #print(f"Streams in PDB: {stream_count}")
 
         stream_sizes = (uint32_t * stream_count).from_buffer_copy(file[4:4+4*stream_count])
         #stream_sizes = list(stream_sizes)
-        print(f"Stream sizes: {[hex(x) for x in stream_sizes]}")
+        #print(f"Stream sizes: {[hex(x) for x in stream_sizes]}")
 
         page_indices_for_streams = []
 
