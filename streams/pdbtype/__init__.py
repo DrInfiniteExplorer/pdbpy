@@ -626,6 +626,32 @@ class Bitfield(PackedStructy):
 
         return post_read_offset, self
 
+@record(LeafID.ARRAY)
+@structify
+class Array(PackedStructy):
+    record_type     : uint16_t
+    element_type    : type_index
+    index_type      : type_index
+    # array_size_bytes
+    # name
+
+
+    @classmethod
+    def from_memory(cls, mem, offset, record_size : int, debug : bool):
+
+        my_size = ctypes.sizeof(cls)
+        self = cls.from_buffer_copy(buffy(mem, offset, offset + my_size))
+        self.addr = offset
+        post_read_offset = offset + my_size
+
+        post_read_offset, self.array_size_bytes = ReadNumeric(mem, post_read_offset)
+        post_read_offset, self.name = ReadString(mem, post_read_offset, self.record_type)
+        #print(f"Array bytecount: {self.array_size_bytes}")
+        #print(f"Array name: {self.name}")
+        #yeet()
+
+        return post_read_offset, self
+
 @record(LeafID.yolo)
 @structify
 class ASD(PackedStructy):
@@ -878,7 +904,7 @@ class PdbTypeStream:
                 continue
             if name == getattr(record, 'name', None):
                 return ti, record
-        assert False, "yolo?"
+        assert False, f"yolo? couldn't find {name} 🤔"
 
         assert name is not None or unique_name is not None, "Need at least a name of any kind!!"
         for stream_offset, info in self.iter_ti_headers():

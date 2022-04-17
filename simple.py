@@ -10,48 +10,60 @@ from pdbpy.utils.ctypes import ( int8_t,  int16_t,  int32_t,  int64_t,
                                 float32_t, float64_t)
 
 
+class Member(object):
+    def __init__(self, parent, cache, definition: pdbpy.streams.pdbtype.Member):
+        self.parent = parent
+        self.cache = cache
+        self.definition = definition
+        self.ti         = definition.field_type
+        self.name       = definition.name
+        self.static     = definition.static
+        self.offset     = -1 if self.static else definition.offset
+
+        attr = definition.field_attributes
+        self.access = attr.access
+
+        self.resolved = None
+    
+    def get_type(self):
+        if self.resolved is None:
+            self.resolved = self.cache.resolve_id(self.ti)
+        return self.resolved
+    
+    def __str__(self):
+        try:
+            return f"@{self.offset} {self.access.name} {self.get_type()} {self.name} from {self.parent.name}"
+        except Exception as e:
+            print(f"ERROR RESOLVING TYPE OF {self.name}")
+            raise e
+
+
+
+
 class Typ(object):
-    class Member(object):
-        def __init__(self, parent, cache, definition: pdbpy.streams.pdbtype.Member):
-            self.parent = parent
-            self.cache = cache
-            self.definition = definition
-            self.ti         = definition.field_type
-            self.name       = definition.name
-            self.static     = definition.static
-            self.offset     = -1 if self.static else definition.offset
-
-            attr = definition.field_attributes
-            self.access = attr.access
-
-            self.resolved = None
-        
-        def get_type(self):
-            if self.resolved is None:
-                self.resolved = self.cache.resolve_id(self.ti)
-            return self.resolved
-        
-        def __str__(self):
-            try:
-                return f"{self.access.name} {self.get_type()} {self.name} @ {self.offset}"
-            except Exception as e:
-                print(f"ERROR RESOLVING TYPE OF {self.name}")
-                raise e
-
-
     def __init__(self, structy : pdbpy.streams.pdbtype.TypeStructLike, cache : 'ResolveCache'):
         self.structy = structy
         self.cache = cache
 
         self.name = structy.name
         self.raw_fields = cache.resolve_id(structy.fields).members
-        self.members = [self.Member(self, cache, member) for member in self.raw_fields if isinstance(member, pdbpy.streams.pdbtype.Member)]
+        self.members = [Member(self, cache, member) for member in self.raw_fields if isinstance(member, pdbpy.streams.pdbtype.Member)]
+        self._parents = None
     
-    def iter_members(self):
+    @property
+    def parents(self):
+        if self._parents is None:
+            self._parents = [self.cache.resolve_id(field.index) for field in self.raw_fields if isinstance(field, pdbpy.streams.pdbtype.BaseClass)]
+        return self._parents
+    
+    def iter_members(self, from_parents=False):
+        if from_parents:
+            for parent in self.parents:
+                yield from parent.iter_members(from_parents=True) # idk mb ¯\_(ツ)_/¯
         yield from self.members
 
-    def get_members(self):
-        return list(self.iter_members())
+    def get_members(self, from_parents=False):
+        return list(self.iter_members(from_parents=from_parents))
     
     def get_methods(self):
         ...
@@ -95,7 +107,24 @@ class Pointer(object):
     def __str__(self):
         return f"PTR({self.reference_type})"
 
+class Array(object):
+    def __init__(self, definition: pdbpy.streams.pdbtype.Array, cache : 'ResolveCache'):
+        self.definition = definition
+        self.cache = cache        
+        self.resolved = None
+    
+    @property
+    def reference_type(self):
+        if self.resolved is None:
+            self.resolved = self.cache.resolve_id(self.definition.element_type)
+        return self.resolved
+    
+    def __str__(self):
+        return f"ARRAY({self.reference_type})"
+
+
 def wrap(raw, cache):
+    if raw is None: return None
     match type(raw):
         case pdbpy.streams.pdbtype.TypeStructLike:
             return Typ(raw, cache)
@@ -107,6 +136,10 @@ def wrap(raw, cache):
             return Enum(raw, cache)
         case pdbpy.streams.pdbtype.Pointer:
             return Pointer(raw, cache)
+        case pdbpy.streams.pdbtype.Modifier:
+            return cache.resolve_id(raw.reference)
+        case pdbpy.streams.pdbtype.Array:
+            return Array(raw, cache)
         
             
 
@@ -207,8 +240,25 @@ def main():
 
         pdb = Pdb(f)
         actor = pdb.get_type("AActor")
-        for member in actor.get_members():
-            print(member)
+        print(actor.parents)
+
+        resolving = []
+        def recursePrint(typ, indent=1):
+            if typ in resolving:
+                print(" " * indent, "<resolving recursively!>")
+                return
+            resolving.append(typ)
+            for member in typ.get_members(from_parents=True):
+                desc = str(member)
+                print(" " * indent, desc)
+                member_type = member.get_type()
+                if isinstance(member_type, Typ):
+                    recursePrint(member_type, indent+2)
+            #resolving.remove(typ)
+        recursePrint(actor, 0)
+        print(actor.parents[0].parents[0].name)
+        #for f in actor.raw_fields:
+        #    print(f)
 
 
 if __name__ == '__main__':
