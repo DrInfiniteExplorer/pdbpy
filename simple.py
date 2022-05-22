@@ -5,9 +5,11 @@ from pdbpy.streams.pdbinfo import PdbInfoStream
 import pdbpy.streams.pdbtype
 import pdbpy.streams.pdbtype.leaf_enum as leafs
 
-from pdbpy.utils.ctypes import ( int8_t,  int16_t,  int32_t,  int64_t,
-                                uint8_t, uint16_t, uint32_t, uint64_t,
-                                float32_t, float64_t)
+
+from dtypes.typedefs import (
+    int8_t,  int16_t,  int32_t,  int64_t,
+    uint8_t, uint16_t, uint32_t, uint64_t,
+    float32_t, float64_t)
 
 
 class Member(object):

@@ -3,13 +3,17 @@ import struct
 
 from enum import IntEnum
 
+from dtypes.structify import (Structy, structify)
+from dtypes.typedefs import (
+    int8_t,  int16_t,  int32_t,  int64_t,
+    uint8_t, uint16_t, uint32_t, uint64_t)
+
 from .leaf_enum import LeafID
 
 from pdbpy.msf import MultiStreamFileStream
-from pdbpy.utils.ctypes import (Structy, Flaggy, structify,
-    int8_t,  int16_t,  int32_t,  int64_t,
-    uint8_t, uint16_t, uint32_t, uint64_t)
+from pdbpy.utils.ctypes import Flaggy
 import pdbpy.utils.hash
+
 
 typ_t = uint32_t
 type_index = typ_t

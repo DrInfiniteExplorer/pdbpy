@@ -1,7 +1,9 @@
 import ctypes
 
 from pdbpy.msf import MultiStreamFileStream
-from pdbpy.utils.ctypes import Structy, uint8_t, uint16_t, uint32_t, structify
+
+from dtypes.structify import (Structy, structify)
+from dtypes.typedefs import (uint8_t, uint16_t, uint32_t)
 
 @structify
 class GUID(Structy):

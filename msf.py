@@ -4,7 +4,8 @@ from typing import Sequence
 import mmap
 import ctypes
 
-from pdbpy.utils.ctypes import (Structy, structify, uint32_t)
+from dtypes.structify import (Structy, structify)
+from dtypes.typedefs import uint32_t
 
 @structify
 class BigHeader(Structy):
