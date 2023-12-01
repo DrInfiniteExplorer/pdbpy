@@ -14,13 +14,10 @@ def main():
         msf = MultiStreamFile(f)
         stream = msf.get("Directory")
 
-        print(f"pdb-stream, skip(1), take(16): {stream.read_pages(byte_offset = 1)[0:16]}")
-
         pdb_stream_directory = StreamDirectoryStream(stream)
 
         pdb_info_file = pdb_stream_directory.get_stream_by_index(1)
         info_stream = PdbInfoStream(pdb_info_file)
-        print(info_stream)
 
         type_info_file = pdb_stream_directory.get_stream_by_index(2)
         type_stream = PdbTypeStream(type_info_file, pdb_stream_directory, upfront_memory=False)
@@ -28,9 +25,6 @@ def main():
 
         actor_ti = 267711
         acty = type_stream.get_by_type_index(ti = actor_ti)
-        print()
-        print(acty)
-        print()
 
         calc_hash = pdbpy.utils.hash.get_hash_for_string(acty.name)
         print("Calculated hash for actor: ", calc_hash)
