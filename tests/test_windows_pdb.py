@@ -7,7 +7,11 @@ from pdbpy.streams.pdbinfo import PdbInfoStream
 from pdbpy.streams.pdbtype import PdbTypeStream
 import pdbpy.utils.hash
 
-from pdbpy.primitivetypes import BasicTypeInfo
+from pdbpy.streams.pdbtype.records import TypeStructLike, FieldList, Member
+
+from pdbpy.streams.pdbtype.records.base import TypeProperties
+
+from pdbpy.primitivetypes import BasicTypeEnum, BasicTypeModifier, BasicTypeInfo
 
 
 @pytest.fixture
@@ -55,7 +59,6 @@ def test_type_lookup_by_type_index(setup_type_stream : PdbTypeStream):
     assert ptr.record_type == LeafID.POINTER
     assert isinstance(ptr, pdbpy.streams.pdbtype.Pointer)
 
-    from pdbpy.primitivetypes import BasicTypeEnum, BasicTypeModifier
     assert BasicTypeInfo(ptr.reference_type) == (BasicTypeEnum.NarrowCharacter, BasicTypeModifier.NearPointer64)
 
     from pdbpy.streams.pdbtype import PointerTypeEnum, PointerModeEnum
@@ -71,15 +74,30 @@ def test_type_lookup_by_type_name(setup_type_stream : PdbTypeStream):
 
     for ti, record in setup_type_stream.get_ti_and_record_for_name(name = "Yolo"):
         assert ti == 13523
-        assert isinstance(record, pdbpy.streams.pdbtype.TypeStructLike)
+        assert isinstance(record, TypeStructLike)
         assert record.element_count == 3
-        expected_properties = pdbpy.streams.pdbtype.TypeProperties(has_unique_name = 1)
+        expected_properties = TypeProperties(has_unique_name = 1)
         #expected_properties.has_unique_name = 1
         assert record.properties == expected_properties
         assert record.fields == 13522
         assert record.derived == 0
         assert record.vshape == 0
         assert record.unique_name == '.?AUYolo@@'
+
+        field_record = setup_type_stream.get_by_type_index(ti = record.fields)
+        print(field_record)
+        assert isinstance(field_record, FieldList)
+        assert len(field_record.members) == 3
+        assert all(isinstance(member, Member) for member in field_record.members)
+        x,y,z = field_record.members
+        assert x.name == "x"
+        assert y.name == "y"
+        assert z.name == "z"
+        print(x)
+        print(BasicTypeInfo(z.field_type))
+        assert BasicTypeInfo(x.field_type) == (BasicTypeEnum.Int32,   BasicTypeModifier.Direct)
+        assert BasicTypeInfo(y.field_type) == (BasicTypeEnum.Float32, BasicTypeModifier.Direct)
+        assert BasicTypeInfo(z.field_type) == (BasicTypeEnum.Float64, BasicTypeModifier.NearPointer64)
 
     asd()
 
