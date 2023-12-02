@@ -1,8 +1,8 @@
 
 from pdbpy.msf import MultiStreamFile
-from pdbpy.streams.streamdirectory import StreamDirectoryStream
+from pdbpy.streams.directorystream import StreamDirectoryStream
 from pdbpy.streams.pdbinfo import PdbInfoStream
-from pdbpy.streams.pdbtype import PdbTypeStream
+from pdbpy.streams.typestream import PdbTypeStream
 import pdbpy.utils.hash
 
 

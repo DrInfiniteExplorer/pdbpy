@@ -2,14 +2,14 @@ import pytest
 
 import pdbpy
 from pdbpy.msf import MultiStreamFile
-from pdbpy.streams.streamdirectory import StreamDirectoryStream
+from pdbpy.streams.directorystream import StreamDirectoryStream
 from pdbpy.streams.pdbinfo import PdbInfoStream
-from pdbpy.streams.pdbtype import PdbTypeStream
+from pdbpy.streams.typestream import PdbTypeStream
 import pdbpy.utils.hash
 
-from pdbpy.streams.pdbtype.records import TypeStructLike, FieldList, Member
+from pdbpy.streams.typestream.records import TypeStructLike, FieldList, Member
 
-from pdbpy.streams.pdbtype.records.base import TypeProperties
+from pdbpy.streams.typestream.records.base import TypeProperties
 
 from pdbpy.primitivetypes import BasicTypeEnum, BasicTypeModifier, BasicTypeInfo
 
@@ -55,13 +55,13 @@ def test_type_lookup_by_type_index(setup_type_stream : PdbTypeStream):
     typeindex = 4096 # first dynamic TI is 4096
     ptr = setup_type_stream.get_by_type_index(ti = typeindex)
 
-    from pdbpy.streams.pdbtype.leaf_enum import LeafID
+    from pdbpy.streams.typestream.leaf_enum import LeafID
     assert ptr.record_type == LeafID.POINTER
-    assert isinstance(ptr, pdbpy.streams.pdbtype.Pointer)
+    assert isinstance(ptr, pdbpy.streams.typestream.Pointer)
 
     assert BasicTypeInfo(ptr.reference_type) == (BasicTypeEnum.NarrowCharacter, BasicTypeModifier.NearPointer64)
 
-    from pdbpy.streams.pdbtype import PointerTypeEnum, PointerModeEnum
+    from pdbpy.streams.typestream import PointerTypeEnum, PointerModeEnum
 
     assert ptr.attributes.kind == PointerTypeEnum.BITS_64
     assert ptr.attributes.mode == PointerModeEnum.Normal
@@ -100,6 +100,10 @@ def test_type_lookup_by_type_name(setup_type_stream : PdbTypeStream):
         assert BasicTypeInfo(z.field_type) == (BasicTypeEnum.Float64, BasicTypeModifier.NearPointer64)
 
     asd()
+
+def test_symbol_lookup_by_name(setup_type_stream : PdbTypeStream):
+    ...
+    
 
 
 

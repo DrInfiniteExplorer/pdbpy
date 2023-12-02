@@ -20,14 +20,6 @@ from pdbpy.streams.typing import type_index
 
 
 
-class PointerModeEnum(IntEnum):
-    Normal              = 0x00
-    OldGenericReference = 0x01
-    LValueReference     = 0x01
-    Member              = 0x02
-    MemberFunction      = 0x03
-    RValueReference     = 0x04
-    RESERVED            = 0x05
 
 class PointerMemberEnum(IntEnum):
     Undef             = 0x00 # not specified (pre VC8)

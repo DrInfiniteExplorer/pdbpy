@@ -219,6 +219,15 @@ class PointerTypeEnum(IntEnum):
     BITS_64      = 0x0c
     UNUSEDPTR    = 0x0d
 
+class PointerModeEnum(IntEnum):
+    Normal              = 0x00
+    OldGenericReference = 0x01
+    LValueReference     = 0x01
+    Member              = 0x02
+    MemberFunction      = 0x03
+    RValueReference     = 0x04
+    RESERVED            = 0x05
+
 @structify
 class PointerAttributes(Flaggy):
     _kind      : (uint32_t, 5) #PointerTypeEnum

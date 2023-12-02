@@ -1,6 +1,6 @@
 
-from io import IOBase
-from typing import Sequence
+from io import IOBase, RawIOBase, UnsupportedOperation
+from typing import Any, Dict, Sequence, List, Optional, Union
 import mmap
 import ctypes
 
@@ -9,24 +9,35 @@ from dtypes.typedefs import uint32_t
 
 @structify
 class BigHeader(Structy):
-    magic: ctypes.c_char*30
-    page_size: uint32_t
-    free_page_map: uint32_t
-    pages_used: uint32_t
-    directory_size_in_bytes: uint32_t
+    _magic: ctypes.c_char*30
+    _page_size: uint32_t
+    _free_page_map: uint32_t
+    _pages_used: uint32_t
+    _directory_size_in_bytes: uint32_t
     _reserved: uint32_t
 
+    @property
+    def magic(self) -> int: return self._magic # type: ignore
+    @property
+    def page_size(self) -> int: return self._page_size # type: ignore
+    @property
+    def free_page_map(self) -> int: return self._free_page_map # type: ignore
+    @property
+    def pages_used(self) -> int: return self._pages_used # type: ignore
+    @property
+    def directory_size_in_bytes(self) -> int: return self._directory_size_in_bytes # type: ignore
 
 
-class MultiStreamFileStream(IOBase):
+
+class MultiStreamFileStream(RawIOBase):
     """
     Usually created by `StreamDirectoryStream.get_stream_by_index`, which you'd do by
     > msf_stream = msf.get("Directory")
-    > directory = pdbpy.streams.StreamDirectoryStream(msf_stream)
+    > directory = pdbpy.streams.directorystreamStream(msf_stream)
     > desired_stream = directory.get_stream_by_index(idx)
 
     Often you'd pass this along to a specific stream-reader,
-     just as is done with to `pdbpy.streams.StreamDirectoryStream`.
+     just as is done with to `pdbpy.streams.directorystreamStream`.
 
     Contains info about where it belongs within the parent `MultiStreamFile`.
     Forwards read-requests to `MultiStreamFile` with it's own information.
@@ -42,7 +53,7 @@ class MultiStreamFileStream(IOBase):
      last 10 bytes in the stream.
 
     """
-    def __init__(self, parent : 'MultiStreamFile', page_list : Sequence[int], size_bytes : int, streamname : str, debug = False):
+    def __init__(self, parent : 'MultiStreamFile', page_list : Sequence[int], size_bytes : int, streamname : str, debug : bool = False):
         assert streamname not in parent.children, f"A stream called {streamname} is already registered in the parent MultiStreamFile"
 
         self.parent = parent
@@ -59,27 +70,30 @@ class MultiStreamFileStream(IOBase):
     def __repr__(self):
         return str(self.__dict__)
     
-    def write(self, bytes):
-        raise UnsupportedOperation("MultiStreamFileStream does not (currently yolo) implement 'write'")
+    #def write(self, bytes : ReadableBuffer):
+    #    raise UnsupportedOperation("MultiStreamFileStream does not (currently yolo) implement 'write'")
     
-    def read(self, bytes) -> bytes:
-        data = parent.read_pages(self.page_list, byte_offset = self.pos, byte_count = bytes)
-        self.pos += bytes
+    def read(self, size : int = -1) -> bytes:
+        data = self.parent.read_pages(self.page_list, byte_offset = self.pos, byte_count = size)
+        self.pos += size
         return data
     
-    def map_pages(self, **kwargs) -> 'List[memory(sub?)view]':
-        args = dict(**kwargs)
+    def map_pages(self, **kwargs : Dict[Any, Any]) -> Sequence[memoryview]:
+        args : Dict[Any, Any]= dict(**kwargs)
         args.update(byte_count = kwargs.get('byte_count', self.size_bytes))
-        return self.parent.map_pages(page_list = self.page_list, **args)
+        args.update(page_list = self.page_list)
+        return self.parent.map_pages(**args) # type: ignore
 
-    def read_pages(self, **kwargs) -> bytes:
-        args = dict(**kwargs)
+    def read_pages(self, **kwargs : Dict[Any, Any]) -> bytes:
+        args :Dict[Any, Any] = dict(**kwargs)
         args.update(byte_count = kwargs.get('byte_count', self.size_bytes))
-        return self.parent.read_pages(page_list = self.page_list, **args)
+        args.update(page_list = self.page_list)
+        return self.parent.read_pages(**args) # type: ignore
     
-    def __getitem__(self, key):
+    def __getitem__(self, key : Union[int, slice]):
         if type(key) is int:
-            return read_pages(byte_offset = key, byte_count=1)[0]
+            mem = self.read_pages(byte_offset = key, byte_count=1) # type: ignore
+            return mem[0]
         if isinstance(key, slice):
             start, stop = key.start, key.stop
             size_bytes = self.size_bytes
@@ -98,7 +112,7 @@ class MultiStreamFileStream(IOBase):
             start_page = start // self.parent.page_size
             stop_page = stop // self.parent.page_size
             
-            all_me = self.map_pages(byte_offset = start, byte_count = stop - start, debug=self.debug)
+            all_me = self.map_pages(byte_offset = start, byte_count = stop - start, debug=self.debug) # type: ignore
             if start_page != stop_page:
                 if key.step != 'copy':
                     raise ValueError(f"Can't slice MultiStreamFileStream across pages unless the 'step' in the slice is 'copy' in which case a copy is returned instead of a memory(sub)view (reading bytes {start}-{stop} from pages {start_page} to {stop_page})")
@@ -109,7 +123,7 @@ class MultiStreamFileStream(IOBase):
             
 
 
-class MultiStreamFile:
+class MultiStreamFile(BigHeader):
     """
     A multi-stream-file contains streams n shit.
     They are split into pages of a certain size, and the pages can be scattered throughout the file.
@@ -141,18 +155,19 @@ class MultiStreamFile:
 
     """
 
-    def __init__(self, file):
+    def __init__(self, file : IOBase):
         self.file = file
         self.mmap = mmap.mmap(file.fileno(), length = 0, access = mmap.ACCESS_READ)
         self.mem = memoryview(self.mmap)
 
-        self.children = dict()
+        self.children : dict[str, MultiStreamFileStream] = dict()
 
         self.header = BigHeader.from_buffer_copy(self.mem)
         assert self.header.magic == b"Microsoft C/C++ MSF 7.00\r\n\x1a\x44\x53", f"Can only deal with 'big' header type and 'MSF 7.0' version, got {self.header.magic}"
         #print(f"page size: {self.header.page_size}")
 
-        for name, type in self.header._fields_[1:]:
+        # Init fields in/from BigHeader
+        for name, _ in self.header._fields_[1:]:
             setattr(self, name, getattr(self.header, name))
 
         # The directory may be fragmented into a number of pages scattered throughout the file.
@@ -168,7 +183,7 @@ class MultiStreamFile:
         #print(f"Page count to contain directory page indices: {page_count_to_contain_directory_page_indices}")
 
         SizeOfBigHeader = ctypes.sizeof(BigHeader)
-        list_of_pages_that_contain_directory_indices = (uint32_t * page_count_to_contain_directory_page_indices).from_buffer_copy(self.mem, SizeOfBigHeader)
+        list_of_pages_that_contain_directory_indices = (uint32_t * page_count_to_contain_directory_page_indices).from_buffer_copy(self.mem, SizeOfBigHeader)[:]
         #print(f"Page numbers that contain directory indices: {list(list_of_pages_that_contain_directory_indices)}")
 
         # Read all pages with directory indices
@@ -179,31 +194,25 @@ class MultiStreamFile:
 
         self.pdb_root_stream_pages = list(directory_page_indices)
 
-        ############# READING ROOT PDB STREAM YEEEEEEEEEEEEEE???
-
-        pdb_stream = MultiStreamFileStream(parent=self, page_list = self.pdb_root_stream_pages, size_bytes = self.directory_size_in_bytes, streamname="Directory")
+        ############# READING ROOT PDB STREAM (it seeds .children)
+        MultiStreamFileStream(parent=self, page_list = self.pdb_root_stream_pages, size_bytes = self.directory_size_in_bytes, streamname="Directory")
+        
 
     def __repr__(self):
         return str(self.__dict__)
 
 
-    def map_pages(self, page_list, yeet=None, byte_offset = 0, byte_count=None, debug=False) -> 'List[memory(sub?)view]':
+    def map_pages(self, page_list : Sequence[int], *, byte_offset : int = 0, byte_count : Optional[int]=None, debug : bool=False) -> Sequence[memoryview]:
         """
         Returns a list of memory-subviews that represent the area requested.
         Join yourself or use `read_pages` to get a corresponding contiguous bytes-object.
         """
 
-        assert yeet is None, "yeet got a value; pass byte_offset and/or byte_count by name!"
-
         page_size = self.page_size
 
         start_page = byte_offset // page_size
-        end_page = (byte_offset + byte_count) // page_size
         byte_offset = byte_offset % page_size
 
-        if start_page == end_page:
-            start = page_list[start_page] * page_size + byte_offset
-            return (self.mem[start : start + byte_count],)
 
         pages_to_read = page_list[start_page:]
 
@@ -213,36 +222,14 @@ class MultiStreamFile:
         if byte_count is None:
             bytes_left = len(pages_to_read) * page_size - byte_offset 
         else:
+            end_page = (byte_offset + byte_count) // page_size
+            if start_page == end_page:
+                start = page_list[start_page] * page_size + byte_offset
+                return (self.mem[start : start + byte_count],)
             bytes_left = byte_count
-        #bytes_left = len(pages_to_read) * page_size - byte_offset if byte_count is None else byte_count
-        
-        #if debug:
-        #    print()
-        #    print(f"Start page: {start_page}")
-        #    print(f"Byte offset: {byte_offset}")
-        #    print(f"Pages: {pages_to_read}")
-        #    print(f"Bytes to read: {bytes_left}")
 
-
-
-        
-        #if debug:
-        #    print()
-
-        areas = []
+        areas : List[memoryview] = []
         page_list_iter = iter(pages_to_read)
-
-        #def range_iterator(offset, count, lst):
-        #    lst_iter = iter(lst)
-        #    if offset != 0:
-        #        dist = min(offset + count, page_size) - offset
-        #        yield (offset, offset + dist, next(lst))
-        #    while count > 0:
-        #        dist = min(count, page_size)
-        #        yield (0, dist, next(lst))
-        #        count -= dist
-
-
 
         while bytes_left > 0:
             #if debug: print()       
@@ -259,21 +246,21 @@ class MultiStreamFile:
         #if debug: print()
         return areas
 
-    def read_pages(self, page_list: 'List[int]', yeet=None, byte_offset = 0, byte_count=None) -> bytes :
+    def read_pages(self, page_list: Sequence[int], * , byte_offset : int = 0, byte_count : Optional[int]=None) -> bytes :
         """
         Returns a copied byte-object containing the desired data.
         """
 
-        return b''.join(self.map_pages(page_list, yeet=yeet, byte_offset = byte_offset, byte_count = byte_count))
+        return b''.join(self.map_pages(page_list, byte_offset = byte_offset, byte_count = byte_count))
 
-    def pages_to_contain_bytes(self, byte_count) -> int:
+    def pages_to_contain_bytes(self, byte_count : int) -> int:
         """
         How many pages do we need to contain byte_count
         """
         page_size = self.page_size
         return (byte_count + page_size - 1 ) // page_size
     
-    def get(self, streamname) -> MultiStreamFileStream:
+    def get(self, streamname : str) -> MultiStreamFileStream:
         stream = self.children.get(streamname, None)
         if stream is None:
             raise ValueError(f"No stream named {streamname} available")
