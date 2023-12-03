@@ -3,7 +3,7 @@ from ctypes import sizeof as c_sizeof
 from dtypes.structify import structify
 from dtypes.typedefs import uint16_t
 
-from .base import record, PackedStructy, buffy, TypeProperties, read_numeric, read_string
+from .base import record, PackedStructy, TypeProperties, read_numeric, read_string
 from ..leaf_enum import LeafID
 from ...typing import type_index
 
@@ -31,19 +31,13 @@ class TypeStructLike(PackedStructy):
     def from_memory(cls, mem, offset, record_size : 'Optional[int]', debug : bool):
 
 
-        header_sizeof = c_sizeof(cls)
-        self = cls.from_buffer_copy(buffy(mem, offset , offset + header_sizeof))
+        my_size = c_sizeof(cls)
+        self = cls.from_buffer_copy(mem[offset: offset + my_size])
         self.addr = offset
         #print(self)
 
         # Name reading from https://github.com/microsoft/microsoft-pdb/blob/e6b1dec61e154b568357537792e1d17a13525d5d/PDB/include/symtypeutils.h#L24        
-        #print(bytes(mem[offset : offset + header_sizeof : 'copy']))
-        #print(bytes(mem[offset : offset + self.size_bytes : 'copy']))
-        #print(bytes(mem[offset + header_sizeof : offset + self.size_bytes: 'copy']))
-        name_offset, self.struct_size_bytes = read_numeric(mem, offset + header_sizeof)
-        #print(f"x={x}")
-        #name_data = buffy(mem, name_offset , offset + self.size_bytes)
-        #print(SzBytesToString(bytes(name_data)))
+        name_offset, self.struct_size_bytes = read_numeric(mem, offset + my_size)
         
         post_read_offset, name_data = read_string(mem, name_offset, self.record_type)
         self.name = name_data

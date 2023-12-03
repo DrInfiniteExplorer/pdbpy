@@ -1,11 +1,14 @@
 
-from io import IOBase, RawIOBase, UnsupportedOperation
-from typing import Any, Dict, Sequence, List, Optional, Union
+from io import IOBase
+from typing import Sequence, List, Optional
+
 import mmap
 import ctypes
 
 from dtypes.structify import (Structy, structify)
 from dtypes.typedefs import uint32_t
+
+from pdbpy.utils.memorywrapper import MemoryWrapper
 
 @structify
 class BigHeader(Structy):
@@ -16,6 +19,8 @@ class BigHeader(Structy):
     _directory_size_in_bytes: uint32_t
     _reserved: uint32_t
 
+    # These are just to make the type system happy.
+    #  (Accesses turn the types into ints, but the type system doesn't realize that.)
     @property
     def magic(self) -> int: return self._magic # type: ignore
     @property
@@ -27,9 +32,7 @@ class BigHeader(Structy):
     @property
     def directory_size_in_bytes(self) -> int: return self._directory_size_in_bytes # type: ignore
 
-
-
-class MultiStreamFileStream(RawIOBase):
+class MultiStreamFileStream(MemoryWrapper):
     """
     Usually created by `StreamDirectoryStream.get_stream_by_index`, which you'd do by
     > msf_stream = msf.get("Directory")
@@ -40,88 +43,20 @@ class MultiStreamFileStream(RawIOBase):
      just as is done with to `pdbpy.streams.directorystreamStream`.
 
     Contains info about where it belongs within the parent `MultiStreamFile`.
-    Forwards read-requests to `MultiStreamFile` with it's own information.
-    Incomplete IOBase -interface.
 
-    Content mapping / reading is as described in `MultiStreamFile`, with the addition
-     that one can slice the stream using `[start : stop]` notation to get a view
-     of the corresponding bytes.
-    NOTE that slicing across page boundaries can't result in a contiguous mapping,
-     and raises an error. It's possible to pass the string 'copy' as a last argument
-     to the slicing to obtain a stitched copy of the bytes across boundaries,
-     like this: `stream[:-10:'copy']` which would return a copy(if necessary) of the
-     last 10 bytes in the stream.
-
+    Behaves like a MemoryWrapper - Initializer pulls memoryviews of the entire stream
+     and wraps it up like a good boy! This makes copies delegated until they are needed.
     """
     def __init__(self, parent : 'MultiStreamFile', page_list : Sequence[int], size_bytes : int, streamname : str, debug : bool = False):
         assert streamname not in parent.children, f"A stream called {streamname} is already registered in the parent MultiStreamFile"
 
         self.parent = parent
         self.page_list = page_list
+        
         self.streamname = streamname
-
-        self.size_bytes = size_bytes
-        self.pos = 0
-
-        self.debug = debug
-
         parent.children[streamname] = self
-    
-    def __repr__(self):
-        return str(self.__dict__)
-    
-    #def write(self, bytes : ReadableBuffer):
-    #    raise UnsupportedOperation("MultiStreamFileStream does not (currently yolo) implement 'write'")
-    
-    def read(self, size : int = -1) -> bytes:
-        data = self.parent.read_pages(self.page_list, byte_offset = self.pos, byte_count = size)
-        self.pos += size
-        return data
-    
-    def map_pages(self, **kwargs : Dict[Any, Any]) -> Sequence[memoryview]:
-        args : Dict[Any, Any]= dict(**kwargs)
-        args.update(byte_count = kwargs.get('byte_count', self.size_bytes))
-        args.update(page_list = self.page_list)
-        return self.parent.map_pages(**args) # type: ignore
 
-    def read_pages(self, **kwargs : Dict[Any, Any]) -> bytes:
-        args :Dict[Any, Any] = dict(**kwargs)
-        args.update(byte_count = kwargs.get('byte_count', self.size_bytes))
-        args.update(page_list = self.page_list)
-        return self.parent.read_pages(**args) # type: ignore
-    
-    def __getitem__(self, key : Union[int, slice]):
-        if type(key) is int:
-            mem = self.read_pages(byte_offset = key, byte_count=1) # type: ignore
-            return mem[0]
-        if isinstance(key, slice):
-            start, stop = key.start, key.stop
-            size_bytes = self.size_bytes
-            if start is None:
-                start = 0
-            if stop is None:
-                stop = size_bytes
-            if start < 0:
-                start = size_bytes + start
-            if stop < 0:
-                stop = size_bytes + stop
-            
-            if self.debug:
-                print("!", start, stop)
-
-            start_page = start // self.parent.page_size
-            stop_page = stop // self.parent.page_size
-            
-            all_me = self.map_pages(byte_offset = start, byte_count = stop - start, debug=self.debug) # type: ignore
-            if start_page != stop_page:
-                if key.step != 'copy':
-                    raise ValueError(f"Can't slice MultiStreamFileStream across pages unless the 'step' in the slice is 'copy' in which case a copy is returned instead of a memory(sub)view (reading bytes {start}-{stop} from pages {start_page} to {stop_page})")
-                return b''.join(all_me)
-            #print(all_me)
-            assert len(all_me) == 1            
-            return all_me[0]
-            
-
+        MemoryWrapper.__init__(self, sources = parent.map_pages(page_list))
 
 class MultiStreamFile(BigHeader):
     """
@@ -141,7 +76,7 @@ class MultiStreamFile(BigHeader):
      essentially a stream, and is often considered to be "stream 0".
 
 
-    
+
     Reading is done through a memory-mapped file by calling `map_pages`.
     You give it a page-list, an optional byte-offset, and an optional count of bytes to read.
     A list of memoryviews corresponding to the pages(and their relevant content) are returned,
@@ -150,9 +85,8 @@ class MultiStreamFile(BigHeader):
     If a list of memory views is to bothersome, there is `read_pages` which calls `map_pages`,
      joins the mapped bytes into a single object, and returns it.
     
-    Reading should likely be done through a `MultiStreamFileStream`-object instead instead, but the
-     semantics for reading that is the same as here.
-
+    Reading should likely be done through a `MultiStreamFileStream`-object instead instead.
+    It wraps those page views in a MemoryWrapper object for easy access.
     """
 
     def __init__(self, file : IOBase):

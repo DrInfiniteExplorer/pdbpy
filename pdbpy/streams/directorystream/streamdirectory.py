@@ -1,10 +1,6 @@
 from pdbpy.msf import MultiStreamFileStream
 
-from dtypes.structify import (Structy, structify)
-from dtypes.typedefs import (
-    int8_t, int16_t, int32_t,
-    uint8_t, uint16_t, uint32_t)
-
+from dtypes.typedefs import uint32_t
 
 class StreamDirectoryStream:
     def __init__(self, file : MultiStreamFileStream):

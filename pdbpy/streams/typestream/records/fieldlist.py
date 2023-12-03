@@ -3,7 +3,7 @@ from ctypes import sizeof as c_sizeof
 from dtypes.structify import structify
 from dtypes.typedefs import uint16_t
 
-from .base import record, PackedStructy, buffy, extract_padding
+from .base import record, PackedStructy, extract_padding
 from ..leaf_enum import LeafID
 
 from ..parse import parse_record
@@ -20,7 +20,7 @@ class FieldList(PackedStructy):
         assert isinstance(record_size, int), "Parsing a field list requires knowledge of how large the total record is!"
 
         my_size = c_sizeof(cls)
-        self = cls.from_buffer_copy(buffy(mem, offset, offset + my_size))
+        self = cls.from_buffer_copy(mem[offset: offset + my_size])
         self.addr = offset
         post_read_offset = offset + my_size
 

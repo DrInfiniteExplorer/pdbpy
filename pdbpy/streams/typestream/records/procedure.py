@@ -3,7 +3,7 @@ from ctypes import sizeof as c_sizeof
 from dtypes.structify import structify
 from dtypes.typedefs import uint8_t, uint16_t
 
-from .base import record, PackedStructy, buffy, FunctionAttributes
+from .base import record, PackedStructy, FunctionAttributes
 from ..leaf_enum import LeafID
 from ...typing import type_index
 
@@ -22,7 +22,7 @@ class Procedure(PackedStructy):
     @classmethod
     def from_memory(cls, mem, offset, record_size : 'Optional[int]', debug : bool):
         my_size = c_sizeof(cls)
-        self = cls.from_buffer_copy(buffy(mem, offset, offset + my_size))
+        self = cls.from_buffer_copy(mem[offset: offset + my_size])
         self.addr = offset
         post_read_offset = offset + my_size
 

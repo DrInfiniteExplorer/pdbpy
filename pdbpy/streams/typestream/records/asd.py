@@ -9,7 +9,7 @@ class ASD(PackedStructy):
     def from_memory(cls, mem, offset, record_size : int, debug : bool):
 
         my_size = c_sizeof(cls)
-        self = cls.from_buffer_copy(buffy(mem, offset, offset + my_size))
+        self = cls.from_buffer_copy(mem[offset: offset + my_size])
         self.addr = offset
         post_read_offset = offset + my_size
 

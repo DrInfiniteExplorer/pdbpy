@@ -1,3 +1,4 @@
+from typing import List, Optional, Sequence, Union
 import pytest
 
 import pdbpy
@@ -7,9 +8,9 @@ from pdbpy.streams.pdbinfo import PdbInfoStream
 from pdbpy.streams.typestream import PdbTypeStream
 import pdbpy.utils.hash
 
-from pdbpy.streams.typestream.records import TypeStructLike, FieldList, Member
+from pdbpy.streams.typestream.records import TypeStructLike, FieldList, Member, Pointer
 
-from pdbpy.streams.typestream.records.base import TypeProperties
+from pdbpy.streams.typestream.records.base import TypeProperties, PointerTypeEnum, PointerModeEnum
 
 from pdbpy.primitivetypes import BasicTypeEnum, BasicTypeModifier, BasicTypeInfo
 
@@ -26,7 +27,7 @@ def setup_directory_stream(setup_windows_pdb : MultiStreamFile) -> StreamDirecto
     return StreamDirectoryStream(stream)
 
 @pytest.fixture
-def setup_info_stream(setup_windows_pdb, setup_directory_stream : StreamDirectoryStream) -> PdbInfoStream:
+def setup_info_stream(setup_windows_pdb: MultiStreamFile, setup_directory_stream : StreamDirectoryStream) -> PdbInfoStream:
     pdb_info_file = setup_directory_stream.get_stream_by_index(1)
     assert pdb_info_file is not None
     info_stream = PdbInfoStream(pdb_info_file)
@@ -57,11 +58,9 @@ def test_type_lookup_by_type_index(setup_type_stream : PdbTypeStream):
 
     from pdbpy.streams.typestream.leaf_enum import LeafID
     assert ptr.record_type == LeafID.POINTER
-    assert isinstance(ptr, pdbpy.streams.typestream.Pointer)
+    assert isinstance(ptr, Pointer)
 
     assert BasicTypeInfo(ptr.reference_type) == (BasicTypeEnum.NarrowCharacter, BasicTypeModifier.NearPointer64)
-
-    from pdbpy.streams.typestream import PointerTypeEnum, PointerModeEnum
 
     assert ptr.attributes.kind == PointerTypeEnum.BITS_64
     assert ptr.attributes.mode == PointerModeEnum.Normal
@@ -99,12 +98,7 @@ def test_type_lookup_by_type_name(setup_type_stream : PdbTypeStream):
         assert BasicTypeInfo(y.field_type) == (BasicTypeEnum.Float32, BasicTypeModifier.Direct)
         assert BasicTypeInfo(z.field_type) == (BasicTypeEnum.Float64, BasicTypeModifier.NearPointer64)
 
-    asd()
-
-def test_symbol_lookup_by_name(setup_type_stream : PdbTypeStream):
-    ...
-    
-
+    #asd()
 
 
 

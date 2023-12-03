@@ -1,9 +1,9 @@
 from enum import IntEnum
-from typing import Dict
+from typing import Dict, List, Optional, Tuple
 
 from dtypes.structify import structify, Structy
 from dtypes.typedefs import uint8_t, uint16_t, uint32_t, uint64_t
-from dtypes.typedefs import int8_t, int16_t, int32_t, int64_t
+from dtypes.typedefs import int16_t, int32_t, int64_t
 from dtypes.typedefs import float32_t, float64_t
 from ctypes import sizeof as c_sizeof
 
@@ -11,16 +11,6 @@ from ..leaf_enum import LeafID
 
 from pdbpy.utils.ctypes import Flaggy
 
-from pdbpy.msf import MultiStreamFileStream
-
-
-def buffy(x, start, end):
-    """
-    Dumb utility function to make sure memory is contiguous.
-    """
-    if isinstance(x, MultiStreamFileStream):
-        return x[start : end : 'copy']
-    return x[start : end]
 
 # same functionality different name
 # https://github.com/Microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/pdbdump/pdbdump.cpp#L2417-L2456
@@ -43,7 +33,7 @@ LeafNumericToCType = {
     LeafID.REAL80    : uint8_t * 10,
     LeafID.REAL128   : uint8_t * 16,
 }
-def read_numeric(mem, offset):
+def read_numeric(mem : memoryview, offset : int):
     """
     Reads a number from the memory offset, returns tuple of (post_read_offset, value).
 
@@ -53,7 +43,7 @@ def read_numeric(mem, offset):
     Strings and floats>65bits are returned as bytes-objects
     """
 
-    number_or_leaf_id = uint16_t.from_buffer_copy(mem[offset : offset + 2]).value
+    number_or_leaf_id : int = uint16_t.from_buffer_copy(mem[offset : offset + 2]).value
     data_offset = offset + 2
 
     match number_or_leaf_id:
@@ -61,22 +51,22 @@ def read_numeric(mem, offset):
             return data_offset, number_or_leaf_id
         case LeafID.VARSTRING:
             print(mem[data_offset : data_offset+10])
-            asd()
+            raise RuntimeError("Implement this as needed")
             length = uint16_t.from_buffer_copy(mem[data_offset : data_offset + 2])
             return data_offset + 2 + length, mem[data_offset + 2 : data_offset + 2 + length]
         case _:
-            typ = LeafNumericToCType.get(number_or_leaf_id)
-            #print(typ)
-            #asd()
+            typ = LeafNumericToCType.get(LeafID(number_or_leaf_id), None)
+            if typ is None:
+                raise ValueError(f"Type based in ID {number_or_leaf_id} (leafif: {LeafID(number_or_leaf_id)}) did not match anything in the conversion table")
 
             size = c_sizeof(typ)
-            value = typ.from_buffer_copy(mem[data_offset : data_offset + size])
+            value = typ.from_buffer_copy(mem[data_offset : data_offset + size]).value
             return data_offset + size, value
     
     raise ValueError(f"How did we get here? {offset}, {number_or_leaf_id}, {data_offset}")
 
 
-def read_string(mem, offset, leafy):
+def read_string(mem : memoryview, offset : int, leafy : LeafID) -> Tuple[int, str]:
     """
     Reads a string and returns byte (though is always UTF8????)
 
@@ -92,13 +82,12 @@ def read_string(mem, offset, leafy):
 
         # TODO seriously consider rewriting to use file-like interface with seeking and page-caching
         #  instead of "fully random access through not-quite-memory-like interface"
-        stuff = []
-        zero = b'\x00'
+        stuff : List[int] = []
         while True:
-            byte = buffy(mem, offset, offset+1)
+            byte = mem[offset]
             offset += 1
-            if byte == zero:
-                joined = b''.join(stuff)
+            if byte == 0:
+                joined = bytes(stuff)
                 try:
                     return offset, joined.decode('utf8')
                 except UnicodeDecodeError as e:
@@ -107,18 +96,18 @@ def read_string(mem, offset, leafy):
     else:
         # read u8, then that number of bytes
         #print("Pascal string")
-        count = uint8_t.from_buffer_copy(buffy(mem, offset, offset+1)).value
+        count = mem[offset]
         post_read_offset = offset + 1
-        return post_read_offset+count, bytes(buffy(mem, post_read_offset, post_read_offset+count)).decode('utf8')
+        return post_read_offset+count, bytes(mem[post_read_offset: post_read_offset+count]).decode('utf8')
 
 def sz_bytes_to_string(data : bytes):
     return data[:data.index(0)].decode('utf8')
 
-def extract_padding(mem, offset, required : bool):
-    next_byte = uint8_t.from_buffer_copy(buffy(mem, offset, offset+1)).value
+def extract_padding(mem : memoryview, offset : int, required : bool):
+    next_byte = mem[offset]
     matches_format = next_byte > 0xf0
     if not matches_format:
-        assert not required, f"Pad byte not in expected 0xF? -format: 0x{next_byte:02X}\n@-5,+15:\n{bytes(buffy(mem, offset-5, offset+15))}"
+        assert not required, f"Pad byte not in expected 0xF? -format: 0x{next_byte:02X}\n@-5,+15:\n{bytes(mem[offset-5: offset+15])}"
         return 0
     padding = next_byte & 0xf
     return padding
@@ -126,17 +115,17 @@ def extract_padding(mem, offset, required : bool):
 class PackedStructy(Structy):
     _pack_ = 1
 
-records_by_id : Dict[int, PackedStructy]= {}
+records_by_id : Dict[LeafID, PackedStructy]= {}
 
-def record(*type_ids):
-    def the_types_tho(typ):
+def record(*type_ids : LeafID):
+    def the_types_tho(typ : PackedStructy):
         for id_ in type_ids:
             records_by_id[id_] = typ
         typ.__record_types = [*type_ids]
         return typ
     return the_types_tho
 
-def get_record_type_by_leaf_type(record_type) -> PackedStructy:
+def get_record_type_by_leaf_type(record_type : LeafID) -> Optional[PackedStructy]:
     return records_by_id.get(record_type, None)
 
 class AccessEnum(IntEnum):

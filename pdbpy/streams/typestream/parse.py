@@ -1,11 +1,12 @@
 
-from typing import Tuple
+from typing import Optional, Tuple
 
 from dtypes.typedefs import uint16_t
 
 from .records.base import PackedStructy, get_record_type_by_leaf_type
 
-def parse_record(mem, record_content_offset, record_type = None, record_size_bytes = None, padding_cricital = False, debug=False) -> Tuple[int, PackedStructy]:
+def parse_record(mem : memoryview, record_content_offset:int, record_type:Optional[int] = None,
+                 record_size_bytes:Optional[int] = None, padding_cricital:bool = False, debug:bool=False) -> Tuple[int, PackedStructy]:
     """
     Returns a tuple of (the first byte after the end of the record) and (the record object)
     """

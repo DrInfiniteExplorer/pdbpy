@@ -38,13 +38,12 @@ records = [
 ]
 
 from .codeviewrecordheader import CodeViewRecordHeader
-from .base import PackedStructy, get_record_type_by_leaf_type, buffy
+from .base import PackedStructy, get_record_type_by_leaf_type
 
 supporting = [
     CodeViewRecordHeader,
     PackedStructy,
     get_record_type_by_leaf_type,
-    buffy,
 ]
 
 

@@ -235,13 +235,12 @@ class PdbTypeStream:
                 if len(lookup) <= lookup_idx:
                     self.lookup.append(pos)
             _, info = CodeViewRecordHeader.from_memory(self.file, pos, type_size, debug=self.debug)
-            #info = CodeViewRecordHeader.from_buffer_copy(buffy(self.file, pos,  pos + type_size))
             info.ti = idx + self.header.ti_min
             if idx >= yield_start_index:
                 yield pos, info
             pos += extra_bytes_to_advance + info.size_bytes
 
-    def __repr__(self):
-        return str(self.__dict__)
+    #def __repr__(self):
+    #    return str(self.__dict__)
 
     
