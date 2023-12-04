@@ -24,7 +24,7 @@ class StreamDirectoryStream:
             if pages_for_stream == 0:
                 page_indices_for_streams.append(())
             else:
-                indices = (uint32_t * pages_for_stream).from_buffer_copy(file[start : start + 4*pages_for_stream : 'copy'])[:]
+                indices = (uint32_t * pages_for_stream).from_buffer_copy(file[start : start + 4*pages_for_stream])[:]
                 start += 4 * len(indices)
                 page_indices_for_streams.append(indices)
         #print(page_indices_for_streams)

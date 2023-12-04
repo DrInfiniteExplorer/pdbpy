@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from dtypes.structify import structify, Structy
 from dtypes.typedefs import uint8_t, uint16_t, uint32_t, uint64_t
@@ -66,7 +66,7 @@ def read_numeric(mem : memoryview, offset : int):
     raise ValueError(f"How did we get here? {offset}, {number_or_leaf_id}, {data_offset}")
 
 
-def read_string(mem : memoryview, offset : int, leafy : LeafID) -> Tuple[int, str]:
+def read_string(mem : memoryview, offset : int, leafy : Union[LeafID, int]) -> Tuple[int, str]:
     """
     Reads a string and returns byte (though is always UTF8????)
 
@@ -115,17 +115,17 @@ def extract_padding(mem : memoryview, offset : int, required : bool):
 class PackedStructy(Structy):
     _pack_ = 1
 
-records_by_id : Dict[LeafID, PackedStructy]= {}
+records_by_id : Dict[LeafID, type[PackedStructy]]= {}
 
 def record(*type_ids : LeafID):
-    def the_types_tho(typ : PackedStructy):
+    def the_types_tho(typ : type[PackedStructy]):
         for id_ in type_ids:
             records_by_id[id_] = typ
-        typ.__record_types = [*type_ids]
+        typ.__record_types = [*type_ids] # type: ignore
         return typ
     return the_types_tho
 
-def get_record_type_by_leaf_type(record_type : LeafID) -> Optional[PackedStructy]:
+def get_record_type_by_leaf_type(record_type : LeafID) -> Optional[type[PackedStructy]]:
     return records_by_id.get(record_type, None)
 
 class AccessEnum(IntEnum):

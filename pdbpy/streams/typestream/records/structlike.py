@@ -1,4 +1,5 @@
 from ctypes import sizeof as c_sizeof
+from typing import Optional
 
 from dtypes.structify import structify
 from dtypes.typedefs import uint16_t
@@ -13,7 +14,7 @@ structy_types = (LeafID.CLASS, LeafID.STRUCTURE, LeafID.INTERFACE, LeafID.CLASS_
 @record(*structy_types)
 @structify
 class TypeStructLike(PackedStructy):
-    record_type   : uint16_t
+    _record_type   : uint16_t
     element_count : uint16_t
     properties    : TypeProperties
     fields        : type_index     # the record which contains the field list (ie. members n methods)
@@ -27,8 +28,11 @@ class TypeStructLike(PackedStructy):
         self.name = None
         self.unique_name = None
     
+    @property
+    def record_type(self) -> int: return self._record_type  # type: ignore
+    
     @classmethod
-    def from_memory(cls, mem, offset, record_size : 'Optional[int]', debug : bool):
+    def from_memory(cls, mem : memoryview, offset : int, record_size : Optional[int], debug : bool):
 
 
         my_size = c_sizeof(cls)

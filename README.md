@@ -9,6 +9,16 @@ OK so lets start with adding some notes and references and stuff.
 Over at [my blog](https://blog.luben.se/debugsymbols.html) I have some raw notes and links that might or might not be of interest.
 
 
+##### Sources and references
+* [volatility3](https://github.com/volatilityfoundation/volatility3) has some under `/volatility3/framework/symbols/windows/[pdb.json|pdbconv.py]`
+    * At least in commit `8e420dec41861993f0cd2837721af2d3e7a6d07a`
+* [radare2](https://github.com/radareorg/radare2)
+* [microsoft-pdb](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/) but it's not really well explained
+* [moyix/pdbparse](https://github.com/moyix/pdbparse) - Iconic python implementation
+* [willglynn/pdb](https://github.com/willglynn/pdb) - Rust implementation of reader
+
+* [Air14/SymbolicAccess](https://github.com/Air14/SymbolicAccess)
+    * [https://github.com/Oxygen1a1/oxgenPdb](https://github.com/Oxygen1a1/oxgenPdb) derivative
 
 ### Getting started
 -------------------
@@ -29,7 +39,6 @@ Over at [my blog](https://blog.luben.se/debugsymbols.html) I have some raw notes
 | Uses the _Hash Stream_ to accelerate type lookup by name? |  ✅  |
 | Can look up symbols?                                      |  ❌  |
 | Can look up addresses?                                    |  ❌  |
-
 
 
 

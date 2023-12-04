@@ -53,7 +53,7 @@ class PdbTypeStream:
         self.stream_directory = stream_directory
 
         if upfront_memory:
-            self.file = file[::'copy']
+            self.file = bytes(file)
 
         header = PDBTypeStreamHeader.from_buffer_copy(self.file[:c_sizeof(PDBTypeStreamHeader)])
 
@@ -77,7 +77,7 @@ class PdbTypeStream:
         #s = time.perf_counter()
         self.hash_stream = stream_directory.get_stream_by_index(self.header.hash_stream_number)
         
-        hash_data = self.hash_stream[header.hash_value_buffer.offset : header.hash_value_buffer.offset + header.hash_value_buffer.byte_count : 'copy']
+        hash_data = bytes(self.hash_stream[header.hash_value_buffer.offset : header.hash_value_buffer.offset + header.hash_value_buffer.byte_count])
         self.hash = [[] for _ in range(self.header.buckets)]
 
         idx = header.ti_min
@@ -93,11 +93,6 @@ class PdbTypeStream:
             for stream_offset, info in take(3, self.iter_ti_headers(self.header.ti_min)):
                 print(f"{stream_offset} - {info}")
 
-
-        #Type index: 6c7eb of 1bfec6
-        #Record type: 4105 | 0x1009
-        #MemberFunction{'record_type': 4105, 'return_type': 1539, 'class_type': 444245, 'this_ptr_type': 444247, 'call_convention': 0, 'attributes': , 'parameter_count': 1, 'arg_list': 4158, 'this_adjustment': 24, 'addr': 31226170}
-
         #i = self.header.ti_min
         ##i = 0x6c7eb
         #for stream_offset, info in take('all', self.iter_ti_headers(i)):
@@ -112,8 +107,9 @@ class PdbTypeStream:
         The hash is the "bucket modulo limited" hash as written into the stream.
         """
         offset = self.header.hash_value_buffer.offset
-        offset += (ti - self.header.ti_min) * 4 # 4 == see assert in __init__
-        return struct.unpack("<I", self.hash_stream[offset : offset + 4 : 'copy'])[0]
+        # 4 == see assert in __init__
+        offset += (ti - self.header.ti_min) * 4
+        return struct.unpack("<I", self.hash_stream[offset : offset + 4])[0]
     
     def get_ti_for_string_by_hash(self, string : str) -> List[type_index]:
         """
@@ -192,7 +188,7 @@ class PdbTypeStream:
 
         def get_io(idx):
             offset = self.header.index_offset_buffer.offset + io_sizeof * idx
-            guess = TypeIndexOffset.from_buffer_copy(self.hash_stream[offset : offset + io_sizeof : 'copy'])
+            guess = TypeIndexOffset.from_buffer_copy(self.hash_stream[offset : offset + io_sizeof])
             return guess
         
         guess = get_io(guess_index)

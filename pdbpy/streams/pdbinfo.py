@@ -17,11 +17,11 @@ class GUID(Structy):
 
 @structify
 class PDBInfoHeader(Structy):
-    version: uint32_t
-    version_timestamp: uint32_t
-    age: uint32_t
-    guid: GUID
-    byte_count_for_names: uint32_t
+    version              : uint32_t
+    version_timestamp    : uint32_t
+    age                  : uint32_t
+    guid                 : GUID
+    byte_count_for_names : uint32_t
 
 
 class PdbInfoStream:

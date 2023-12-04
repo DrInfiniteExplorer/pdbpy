@@ -1,7 +1,5 @@
-from typing import List, Optional, Sequence, Union
 import pytest
 
-import pdbpy
 from pdbpy.msf import MultiStreamFile
 from pdbpy.streams.directorystream import StreamDirectoryStream
 from pdbpy.streams.pdbinfo import PdbInfoStream
@@ -84,7 +82,7 @@ def test_type_lookup_by_type_name(setup_type_stream : PdbTypeStream):
         assert record.unique_name == '.?AUYolo@@'
 
         field_record = setup_type_stream.get_by_type_index(ti = record.fields)
-        print(field_record)
+
         assert isinstance(field_record, FieldList)
         assert len(field_record.members) == 3
         assert all(isinstance(member, Member) for member in field_record.members)
@@ -92,58 +90,9 @@ def test_type_lookup_by_type_name(setup_type_stream : PdbTypeStream):
         assert x.name == "x"
         assert y.name == "y"
         assert z.name == "z"
-        print(x)
-        print(BasicTypeInfo(z.field_type))
+
         assert BasicTypeInfo(x.field_type) == (BasicTypeEnum.Int32,   BasicTypeModifier.Direct)
         assert BasicTypeInfo(y.field_type) == (BasicTypeEnum.Float32, BasicTypeModifier.Direct)
         assert BasicTypeInfo(z.field_type) == (BasicTypeEnum.Float64, BasicTypeModifier.NearPointer64)
 
-    #asd()
-
-
-
-def main():
-        import sys
-
-
-        #print(type_stream)
-
-
-        calc_hash = pdbpy.utils.hash.get_hash_for_string(acty.name)
-        print("Calculated hash for actor: ", calc_hash)
-        print("Calculated bucket for actor: ", calc_hash % type_stream.header.buckets)
-        
-        print(f"Hash for actor:               {type_stream.get_hash_for_ti(actor_ti)}")
-        print()
-
-
-        errory_name = 'TWeakObjectPtr<AActor,FWeakObjectPtr>'
-        errory_ti = 0x000408ad
-        calc_hash = pdbpy.utils.hash.get_hash_for_string(errory_name)
-        print(f"Calculated hash for errory:    {calc_hash:x}")
-        print(f"Calculated bucket for errory:  {(calc_hash % type_stream.header.buckets):x}")
-        print(f"Hash for errory:               {type_stream.get_hash_for_ti(errory_ti):x}")
-        print(f"Hash for errory(fwd):          {type_stream.get_hash_for_ti(0x2578):x}")
-        print()
-
-        print(type_stream.get_structy_by_name(errory_name))
-
-
-        import time
-        s = time.perf_counter()
-        acty = type_stream.get_by_type_index(ti = type_stream.header.ti_max-1) # 3.9s before thingy
-        #acty = type_stream.get_by_type_index(ti = type_stream.header.ti_min+3)
-        #acty = type_stream.get_by_type_index(ti = actor_ti)
-        print(acty, "\n", time.perf_counter()-s)
-
-
-        s = time.perf_counter()
-        ti, typ = type_stream.get_structy_by_name('AActor')
-        print("TI: ", ti)
-        print("actor class:", typ, "\n", time.perf_counter()-s)
-#
-        #members_typ = type_stream.get_by_type_index(typ.field)
-        #print("members: ")
-        #for member in members_typ.members:
-        #    print(member)
 
