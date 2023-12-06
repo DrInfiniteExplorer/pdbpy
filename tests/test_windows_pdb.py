@@ -1,10 +1,10 @@
 import pytest
 
 from pdbpy.msf import MultiStreamFile
+from pdbpy.streams.debuginformationstream.debuginformationstream import PdbDebugInformationStream
 from pdbpy.streams.directorystream import StreamDirectoryStream
 from pdbpy.streams.pdbinfo import PdbInfoStream
 from pdbpy.streams.typestream import PdbTypeStream
-import pdbpy.utils.hash
 
 from pdbpy.streams.typestream.records import TypeStructLike, FieldList, Member, Pointer
 
@@ -38,6 +38,13 @@ def setup_type_stream(setup_directory_stream : StreamDirectoryStream) -> PdbType
     type_stream = PdbTypeStream(type_info_file, setup_directory_stream, upfront_memory=False)
     return type_stream
 
+@pytest.fixture
+def setup_debuginformation_stream(setup_directory_stream : StreamDirectoryStream) -> PdbDebugInformationStream:
+    debug_information_file = setup_directory_stream.get_stream_by_index(3)
+    assert debug_information_file is not None
+    debug_infomation_stream = PdbDebugInformationStream(debug_information_file, setup_directory_stream)
+    return debug_infomation_stream
+
 def test_can_open(setup_windows_pdb : MultiStreamFile):
     assert setup_windows_pdb is not None
 
@@ -49,6 +56,9 @@ def test_directory_info_exists(setup_info_stream : PdbInfoStream):
 
 def test_directory_type_exists(setup_type_stream : PdbTypeStream):
     assert setup_type_stream is not None
+
+def test_debug_information_stream(setup_debuginformation_stream : PdbDebugInformationStream):
+    assert setup_debuginformation_stream is not None
 
 def test_type_lookup_by_type_index(setup_type_stream : PdbTypeStream):
     typeindex = 4096 # first dynamic TI is 4096

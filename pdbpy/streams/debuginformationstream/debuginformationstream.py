@@ -6,6 +6,7 @@ from dtypes.typedefs import uint8_t, uint16_t, uint32_t
 
 from pdbpy.msf import MultiStreamFileStream
 from pdbpy.streams.directorystream.streamdirectory import StreamDirectoryStream
+from pdbpy.utils.ctypes import Flaggy
 
 StreamNumber : TypeAlias = uint16_t
 
@@ -23,7 +24,9 @@ class PDBDbiStreamHeaderFlags(Flaggy):
 # https://github.com/volatilityfoundation/volatility3/blob/8e420dec41861993f0cd2837721af2d3e7a6d07a/volatility3/framework/symbols/windows/pdb.json#L420
 @structify
 class PDBDbiStreamHeader(Structy):
-    magic                            : uint32_t * 0xFFFFFFFF
+    _pack_ = 1
+
+    magic                            : uint32_t # 0xFFFFFFFF
     version                          : uint32_t
     age                              : uint32_t
     global_symbol_stream_index       : StreamNumber
@@ -32,7 +35,7 @@ class PDBDbiStreamHeader(Structy):
     pdb_building_dll_version         : uint16_t # version of DLL that built PDB
     symbol_record_stream             : StreamNumber
     pdb_building_dll_rbld_version    : uint16_t # like the version above, but... rbld?
-    module_size                      : uint32_t # some substream size?
+    _module_size                      : uint32_t # Total size of extended headers following this header
     section_contribution_stream_size : uint32_t
     section_map_size                 : uint32_t
     file_info_size                   : uint32_t
@@ -44,6 +47,9 @@ class PDBDbiStreamHeader(Structy):
     machine                          : uint16_t
     reserved                         : uint32_t
 
+    @property
+    def module(self) -> int: return self._module
+
 
 
 
@@ -52,10 +58,9 @@ class PdbDebugInformationStream:
     This is often called the DBI stream.
 
     """
-    def __init__(self, file: MultiStreamFileStream, stream_directory : StreamDirectoryStream,  upfront_memory : bool = False, debug : bool=False):
+    def __init__(self, file: MultiStreamFileStream, stream_directory : StreamDirectoryStream, upfront_memory : bool = False, debug : bool=False):
         self.debug = debug
         self.file = file
-        self.stream_directory = stream_directory
 
         if upfront_memory:
 
@@ -64,3 +69,12 @@ class PdbDebugInformationStream:
         self.header = PDBDbiStreamHeader.from_buffer_copy(self.file[:c_sizeof(PDBDbiStreamHeader)])
 
         assert self.header.magic == 0xFFFFFFFF, f"DebugInformationStream magic bytes expected to be 0xFFFFFFFF, was 0x{self.header.magic:X}"
+        print(self.header)
+
+        #print(stream_directory.stream_count)
+        #public = stream_directory.get_stream_by_index(self.header.public_symbol_stream_index)
+        #print(public)
+        #print(stream_directory.get_stream_by_index(self.header.global_symbol_stream_index))
+
+        dbiex_area = self.file[c_sizeof(self.header) : c_sizeof(self.header) + self.header.module_size]
+
