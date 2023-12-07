@@ -9,7 +9,15 @@ from pdbpy.msf import MultiStreamFileStream
 from pdbpy.streams.directorystream.streamdirectory import StreamDirectoryStream
 from pdbpy.utils.ctypes import Flaggy
 
-StreamNumber : TypeAlias = uint16_t
+StreamNumber    : TypeAlias = uint16_t # SN    in microsoft-pdb https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/include/msf.h#L39
+ModuleIndex16   : TypeAlias = uint16_t # IMOD  in microsoft-pdb https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/include/pdbtypdefs.h#L41
+SectionIndex16  : TypeAlias = uint16_t # ISECT in microsoft-pdb https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/include/pdbtypdefs.h#L42
+ByteCount32     : TypeAlias = uint32_t # CB    in microsoft-pdb https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/include/pdbtypdefs.h#L13
+Offset32        : TypeAlias = uint32_t # OFF   in microsoft-pdb https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/include/pdbtypdefs.h#L14
+FileCount16     : TypeAlias = uint16_t # IFILE in microsoft-pdb https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/dbi/dbiimpl.h#L50
+NameIndex32     : TypeAlias = uint32_t # NI    in microsoft-pdb https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/langapi/include/pdb.h#L134
+
+
 
 # https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/dbi/dbi.h#L187
 @structify
@@ -51,10 +59,6 @@ class PDBDbiStreamHeader(Structy):
     @property
     def module_size(self) -> int: return self._module_size # type: ignore
 
-ModuleIndex16   : TypeAlias = uint16_t # IMOD  in microsoft-pdb https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/include/pdbtypdefs.h#L41
-SectionIndex16  : TypeAlias = uint16_t # ISECT in microsoft-pdb https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/include/pdbtypdefs.h#L42
-ByteCount32     : TypeAlias = uint32_t # CB    in microsoft-pdb https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/include/pdbtypdefs.h#L13
-Offset32        : TypeAlias = uint32_t # OFF   in microsoft-pdb https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/include/pdbtypdefs.h#L14
 
 
 # https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/include/dbicommon.h#L19,L44
@@ -88,12 +92,26 @@ class ModuleInformation(Structy):
     #     Mod* = https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/langapi/include/pdb.h#L966
     # "opened" https://github.com/moyix/pdbparse/blob/master/pdbparse/dbi.py#L87C24-L87C24
     # "opened" https://github.com/willglynn/pdb/blob/master/src/dbi.rs#L426
-    pmod                 : VoidyPtr
-    section_contribution : SectionContribution
-    written              : (uint16_t, 1)
-    EC_enabled           : (uint16_t, 1)
-    _unused              : (uint16_t, 6)
-    iTSM                 : (uint16_t, 8)
+    _internal_leakage     : VoidyPtr
+    section_contribution  : SectionContribution
+    written               : (uint16_t, 1)
+    EC_enabled            : (uint16_t, 1)
+    _unused               : (uint16_t, 6)
+    iTSM                  : (uint16_t, 8)
+    module_debug_info     : StreamNumber
+    local_symbols_size    : ByteCount32
+    line_numbers_size     : ByteCount32
+    c13_line_numbers_size : ByteCount32
+    file_count            : FileCount16
+    _padding              : uint16_t
+    _internal_leakage2    : VoidyPtr
+    src_filename          : NameIndex32
+    pdb_filename          : NameIndex32
+    # cstring                              # https://github.com/willglynn/pdb/blob/master/src/dbi.rs#L523 and https://github.com/moyix/pdbparse/blob/master/pdbparse/dbi.py#L99
+
+
+    
+
 
 
 
