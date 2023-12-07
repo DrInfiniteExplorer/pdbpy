@@ -2,6 +2,7 @@ from ctypes import sizeof as c_sizeof
 from typing import TypeAlias
 from dtypes.structify import Structy, structify
 from dtypes.typedefs import uint8_t, uint16_t, uint32_t
+from dtypes.voidy import VoidyPtr
 
 
 from pdbpy.msf import MultiStreamFileStream
@@ -35,7 +36,7 @@ class PDBDbiStreamHeader(Structy):
     pdb_building_dll_version         : uint16_t # version of DLL that built PDB
     symbol_record_stream             : StreamNumber
     pdb_building_dll_rbld_version    : uint16_t # like the version above, but... rbld?
-    _module_size                      : uint32_t # Total size of extended headers following this header
+    _module_size                     : uint32_t # Total size of extended headers following this header? Also called `cbGpModi` in microsoft-pdb
     section_contribution_stream_size : uint32_t
     section_map_size                 : uint32_t
     file_info_size                   : uint32_t
@@ -48,7 +49,54 @@ class PDBDbiStreamHeader(Structy):
     reserved                         : uint32_t
 
     @property
-    def module(self) -> int: return self._module
+    def module_size(self) -> int: return self._module_size # type: ignore
+
+ModuleIndex16   : TypeAlias = uint16_t # IMOD  in microsoft-pdb https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/include/pdbtypdefs.h#L41
+SectionIndex16  : TypeAlias = uint16_t # ISECT in microsoft-pdb https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/include/pdbtypdefs.h#L42
+ByteCount32     : TypeAlias = uint32_t # CB    in microsoft-pdb https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/include/pdbtypdefs.h#L13
+Offset32        : TypeAlias = uint32_t # OFF   in microsoft-pdb https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/include/pdbtypdefs.h#L14
+
+
+# https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/include/dbicommon.h#L19,L44
+# https://github.com/willglynn/pdb/blob/master/src/dbi.rs#L399
+# https://github.com/moyix/pdbparse/blob/master/pdbparse/dbi.py#L17
+@structify
+class SectionContribution(Structy):
+    _pack_ = 1
+    index            : SectionIndex16
+    _padding         : uint16_t
+    offset           : Offset32
+    size             : ByteCount32
+    characteristicts : uint32_t # https://github.com/willglynn/pdb/blob/master/src/pe.rs#L102 -> [`IMAGE_SCN_`]: https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-image_section_header
+    module           : ModuleIndex16
+    _padding2        : uint16_t
+    data_crc         : uint32_t
+    reloc_crc        : uint32_t
+
+
+
+
+
+
+
+# https://github.com/Microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/dbi/dbi.h#L1197
+@structify
+class ModuleInformation(Structy):
+    _pack = 1
+
+    # https://github.com/Microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/dbi/dbi.h#L1199
+    #     Mod* = https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/langapi/include/pdb.h#L966
+    # "opened" https://github.com/moyix/pdbparse/blob/master/pdbparse/dbi.py#L87C24-L87C24
+    # "opened" https://github.com/willglynn/pdb/blob/master/src/dbi.rs#L426
+    pmod                 : VoidyPtr
+    section_contribution : SectionContribution
+    written              : (uint16_t, 1)
+    EC_enabled           : (uint16_t, 1)
+    _unused              : (uint16_t, 6)
+    iTSM                 : (uint16_t, 8)
+
+
+
 
 
 
@@ -77,4 +125,8 @@ class PdbDebugInformationStream:
         #print(stream_directory.get_stream_by_index(self.header.global_symbol_stream_index))
 
         dbiex_area = self.file[c_sizeof(self.header) : c_sizeof(self.header) + self.header.module_size]
+
+        
+        for 
+            
 
