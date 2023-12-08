@@ -107,7 +107,10 @@ class ModuleInformation(Structy):
     _internal_leakage2    : VoidyPtr
     src_filename          : NameIndex32
     pdb_filename          : NameIndex32
-    # cstring                              # https://github.com/willglynn/pdb/blob/master/src/dbi.rs#L523 and https://github.com/moyix/pdbparse/blob/master/pdbparse/dbi.py#L99
+    # https://github.com/willglynn/pdb/blob/master/src/dbi.rs#L523
+    # https://github.com/moyix/pdbparse/blob/master/pdbparse/dbi.py#L99
+    # microsoft-pdb reads the whole buffer, then interprets the strings from there https://github.com/microsoft/microsoft-pdb/blob/082c5290e5aff028ae84e43affa8be717aa7af73/PDB/dbi/dbi.cpp#L508
+    # cstring
 
 
     
