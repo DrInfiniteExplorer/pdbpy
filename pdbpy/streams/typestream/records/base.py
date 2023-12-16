@@ -65,6 +65,24 @@ def read_numeric(mem : memoryview, offset : int):
     
     raise ValueError(f"How did we get here? {offset}, {number_or_leaf_id}, {data_offset}")
 
+def read_stringz(mem: memoryview) -> Tuple[str, int]:
+    """
+    Returns a tuple of [string, bytes including zero terminator]
+    """
+    stuff : List[int] = []
+    offset = 0
+    while True:
+        byte = mem[offset]
+        offset += 1
+        if byte == 0:
+            joined = bytes(stuff)
+            try:
+                return joined.decode('utf8'), offset
+            except UnicodeDecodeError as e:
+                return joined, offset
+        stuff.append(byte)
+
+
 
 def read_string(mem : memoryview, offset : int, leafy : Union[LeafID, int]) -> Tuple[int, str]:
     """
@@ -82,17 +100,8 @@ def read_string(mem : memoryview, offset : int, leafy : Union[LeafID, int]) -> T
 
         # TODO seriously consider rewriting to use file-like interface with seeking and page-caching
         #  instead of "fully random access through not-quite-memory-like interface"
-        stuff : List[int] = []
-        while True:
-            byte = mem[offset]
-            offset += 1
-            if byte == 0:
-                joined = bytes(stuff)
-                try:
-                    return offset, joined.decode('utf8')
-                except UnicodeDecodeError as e:
-                    return offset, joined
-            stuff.append(byte)
+        string, bytecount = read_stringz(mem[offset:])
+        return offset + bytecount, string
     else:
         # read u8, then that number of bytes
         #print("Pascal string")

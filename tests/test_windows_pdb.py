@@ -89,6 +89,7 @@ def test_type_lookup_by_type_name(setup_type_stream : PdbTypeStream):
         assert record.fields == 13522
         assert record.derived == 0
         assert record.vshape == 0
+        assert record.name == 'Yolo'
         assert record.unique_name == '.?AUYolo@@'
 
         field_record = setup_type_stream.get_by_type_index(ti = record.fields)
