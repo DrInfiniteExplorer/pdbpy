@@ -23,12 +23,16 @@ class PDBInfoHeader(Structy):
     guid                 : GUID
     byte_count_for_names : uint32_t
 
+    #@property
+    #def byte_count_for_names(self) -> int: return self._byte_count_for_names # type: ignore
+
 
 class PdbInfoStream:
     def __init__(self, file: MultiStreamFileStream):
         self.file = file
         mem = self.file[:]
         stuff = PDBInfoHeader.from_buffer_copy(mem)
+        self.byte_count_for_names = 0
         for name, _ in stuff._fields_:
             setattr(self, name, getattr(stuff, name))
         

@@ -17,35 +17,29 @@ from .structlike import TypeStructLike
 from .vfunctab import VFuncTab
 from .virtualbaseclass import VirtualBaseClass
 
-records = [
-    Array,
-    BaseClass,
-    Bitfield,
-    Enum,
-    Enumerate,
-    FieldList,
-    Member,
-    MemberFunction,
-    Method,
-    Modifier,
-    NestType,
-    OneMethod,
-    Pointer,
-    Procedure,
-    TypeStructLike,
-    VFuncTab,
-    VirtualBaseClass,
-]
-
 from .codeviewrecordheader import CodeViewRecordHeader
 from .base import PackedStructy, get_record_type_by_leaf_type
 
-supporting = [
-    CodeViewRecordHeader,
-    PackedStructy,
-    get_record_type_by_leaf_type,
+__all__ = [
+    "Array",
+    "BaseClass",
+    "Bitfield",
+    "Enum",
+    "Enumerate",
+    "FieldList",
+    "Member",
+    "MemberFunction",
+    "Method",
+    "Modifier",
+    "NestType",
+    "OneMethod",
+    "Pointer",
+    "Procedure",
+    "TypeStructLike",
+    "VFuncTab",
+    "VirtualBaseClass",
+
+    "CodeViewRecordHeader",
+    "PackedStructy",
+    "get_record_type_by_leaf_type",
 ]
-
-
-
-__all__ = records + supporting

@@ -1,25 +1,4 @@
 from enum import IntEnum
-from ctypes import sizeof as c_sizeof
-import struct
-
-from typing import Dict, Tuple, List, Iterable
-
-
-from dtypes.structify import (Structy, structify)
-from dtypes.typedefs import (
-    int8_t,  int16_t,  int32_t,  int64_t,
-    uint8_t, uint16_t, uint32_t, uint64_t)
-
-from .leaf_enum import LeafID
-
-from pdbpy.utils.ctypes import Flaggy
-
-from pdbpy.streams.typing import type_index
-
-
-
-
-
 
 class PointerMemberEnum(IntEnum):
     Undef             = 0x00 # not specified (pre VC8)
@@ -31,19 +10,6 @@ class PointerMemberEnum(IntEnum):
     Function_Multiple = 0x06 # member function, multiple inheritance
     Function_Virtual  = 0x07 # member function, virtual inheritance
     Function_General  = 0x08 # member function, most general
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

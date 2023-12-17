@@ -1,10 +1,11 @@
 import pytest
+from pdbpy.codeview import LeafID
 
 from pdbpy.msf import MultiStreamFile
 from pdbpy.streams.debuginformationstream.debuginformationstream import PdbDebugInformationStream
 from pdbpy.streams.directorystream import StreamDirectoryStream
 from pdbpy.streams.pdbinfo import PdbInfoStream
-from pdbpy.streams.typestream import PdbTypeStream
+from pdbpy.streams.typestream.pdbtypestream import PdbTypeStream
 
 from pdbpy.streams.typestream.records import TypeStructLike, FieldList, Member, Pointer
 
@@ -62,9 +63,8 @@ def test_debug_information_stream(setup_debuginformation_stream : PdbDebugInform
 
 def test_type_lookup_by_type_index(setup_type_stream : PdbTypeStream):
     typeindex = 4096 # first dynamic TI is 4096
-    ptr = setup_type_stream.get_by_type_index(ti = typeindex)
+    ptr = setup_type_stream.get_by_type_index(ti = typeindex) # type: ignore
 
-    from pdbpy.streams.typestream.leaf_enum import LeafID
     assert ptr.record_type == LeafID.POINTER
     assert isinstance(ptr, Pointer)
 
@@ -92,7 +92,7 @@ def test_type_lookup_by_type_name(setup_type_stream : PdbTypeStream):
         assert record.name == 'Yolo'
         assert record.unique_name == '.?AUYolo@@'
 
-        field_record = setup_type_stream.get_by_type_index(ti = record.fields)
+        field_record = setup_type_stream.get_by_type_index(ti = record.fields) # type: ignore
 
         assert isinstance(field_record, FieldList)
         assert len(field_record.members) == 3

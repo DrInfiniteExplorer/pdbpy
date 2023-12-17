@@ -3,8 +3,10 @@ from ctypes import sizeof as c_sizeof
 from dtypes.structify import structify
 from dtypes.typedefs import uint16_t
 
+from pdbpy.parsing import read_numeric, read_string
+
 from .base import record, PackedStructy
-from ..leaf_enum import LeafID
+from pdbpy.codeview import LeafID
 from ...typing import type_index
 
 @record(LeafID.ARRAY)
@@ -18,7 +20,7 @@ class Array(PackedStructy):
 
 
     @classmethod
-    def from_memory(cls, mem, offset, record_size : int, debug : bool):
+    def from_memory(cls, mem: memoryview, offset: int, record_size : int, debug : bool):
 
         my_size = c_sizeof(cls)
         self = cls.from_buffer_copy(mem[offset:offset + my_size])

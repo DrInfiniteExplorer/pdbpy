@@ -4,8 +4,10 @@ from typing import Optional
 from dtypes.structify import structify
 from dtypes.typedefs import uint16_t
 
-from .base import record, PackedStructy, TypeProperties, read_numeric, read_string
-from ..leaf_enum import LeafID
+from pdbpy.codeview import LeafID
+from pdbpy.parsing import read_numeric, read_string
+
+from .base import record, PackedStructy, TypeProperties
 from ...typing import type_index
 
 

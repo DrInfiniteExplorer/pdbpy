@@ -16,7 +16,7 @@ class CodeViewRecordHeader(PackedStructy):
     # ti : type_index
 
     @classmethod
-    def from_memory(cls, mem, offset, record_size : 'Optional[int]', debug : bool):
+    def from_memory(cls, mem: memoryview, offset: int, record_size: int, debug : bool):
         my_size = c_sizeof(cls)
         post_read_offset = offset + my_size
         self = CodeViewRecordHeader.from_buffer_copy(mem[offset: offset + my_size])

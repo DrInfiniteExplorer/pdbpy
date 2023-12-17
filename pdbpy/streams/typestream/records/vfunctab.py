@@ -1,10 +1,12 @@
 from ctypes import sizeof as c_sizeof
+from typing import Optional
 
 from dtypes.structify import structify
 from dtypes.typedefs import uint16_t
 
+from pdbpy.codeview import LeafID
+
 from .base import record, PackedStructy
-from ..leaf_enum import LeafID
 from ...typing import type_index
 
 
@@ -16,7 +18,7 @@ class VFuncTab(PackedStructy):
     vtable_ptr      : type_index
 
     @classmethod
-    def from_memory(cls, mem, offset, record_size : 'Optional[int]', debug : bool):
+    def from_memory(cls, mem : memoryview, offset : int, record_size : Optional[int], debug : bool):
         my_size = c_sizeof(cls)
         self = cls.from_buffer_copy(mem[offset: offset + my_size])
         self.addr = offset

@@ -1,6 +1,4 @@
-from enum import IntEnum, auto
-
-from pdbpy.streams.typing import type_index
+from enum import IntEnum
 
 # Lifted from https:#github.com/microsoft/microsoft-pdb/blob/1d60e041600117a5004de84baa960d2c953a6aa6/include/cvinfo.h#L772
 class LeafID(IntEnum):

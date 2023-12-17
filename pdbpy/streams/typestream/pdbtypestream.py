@@ -44,7 +44,7 @@ assert c_sizeof(TypeIndexOffset) == 8
 
 
 class PdbTypeStream:
-    def __init__(self, file: MultiStreamFileStream, stream_directory : 'StreamDirectoryStream',  lookup_skip = 10, upfront_memory = False, debug=False):
+    def __init__(self, file: MultiStreamFileStream, stream_directory: 'StreamDirectoryStream', lookup_skip: int = 10, upfront_memory: bool = False, debug: bool =False):
         """
         lookup_skip sets the "skip" value when adding offsets to the speedreader-cache;
          Every `lookup_skip` pairs of (type_index, stream_offset) is added to a cache.

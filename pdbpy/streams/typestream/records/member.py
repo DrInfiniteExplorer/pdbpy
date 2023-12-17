@@ -1,10 +1,13 @@
 from ctypes import sizeof as c_sizeof
+from typing import Optional
 
 from dtypes.structify import structify
 from dtypes.typedefs import uint16_t
 
-from .base import record, PackedStructy, FieldAttributes, read_numeric, read_string
-from ..leaf_enum import LeafID
+from pdbpy.parsing import read_numeric, read_string
+
+from .base import record, PackedStructy, FieldAttributes
+from pdbpy.codeview import LeafID
 from ...typing import type_index
 
 @record(LeafID.MEMBER, LeafID.MEMBER_ST, LeafID.STMEMBER, LeafID.STMEMBER_ST)
@@ -18,7 +21,7 @@ class Member(PackedStructy):
     #name
 
     @classmethod
-    def from_memory(cls, mem, offset, record_size : 'Optional[int]', debug : bool):
+    def from_memory(cls, mem: memoryview, offset: int, record_size: Optional[int], debug : bool):
         my_size = c_sizeof(cls)
         self = cls.from_buffer_copy(mem[offset: offset + my_size])
         self.addr = offset

@@ -4,7 +4,7 @@ from dtypes.structify import structify
 from dtypes.typedefs import uint16_t
 
 from .base import record, PackedStructy, extract_padding
-from ..leaf_enum import LeafID
+from pdbpy.codeview import LeafID
 
 from ..parse import parse_record
 
@@ -15,7 +15,7 @@ class FieldList(PackedStructy):
     # members : List[PackedStructy]
 
     @classmethod
-    def from_memory(cls, mem, offset, record_size : int, debug : bool):
+    def from_memory(cls, mem: memoryview, offset: int, record_size : int, debug : bool):
 
         assert isinstance(record_size, int), "Parsing a field list requires knowledge of how large the total record is!"
 

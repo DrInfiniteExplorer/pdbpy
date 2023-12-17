@@ -1,9 +1,8 @@
 
+from pdbpy.codeview import LeafID
 from pdbpy.msf import MultiStreamFile
 from pdbpy.streams.directorystream import StreamDirectoryStream
-from pdbpy.streams.pdbinfo import PdbInfoStream
 import pdbpy.streams.typestream
-import pdbpy.streams.typestream.leaf_enum as leafs
 
 
 from dtypes.typedefs import (
@@ -165,7 +164,7 @@ class ResolveCache(object):
         def MakePrimitive(ctype, *matches):
             primitive = self.Primitive(ctype)
             for match in matches:
-                for modifier in leafs.BasicTypeModifier:
+                for modifier in LeafID.BasicTypeModifier:
                     combined = modifier << 8 | match
                     self.cache[combined] = primitive
                     #print(f"0x{combined:04x} = {primitive.ctype}")
