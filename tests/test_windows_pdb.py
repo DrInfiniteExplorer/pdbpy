@@ -73,10 +73,6 @@ def test_type_lookup_by_type_index(setup_type_stream : PdbTypeStream):
     assert ptr.attributes.kind == PointerTypeEnum.BITS_64
     assert ptr.attributes.mode == PointerModeEnum.Normal
 
-    print(ptr.attributes.kind)
-    print(ptr.attributes.mode)
-    print(ptr.attributes)
-
 def test_type_lookup_by_type_name(setup_type_stream : PdbTypeStream):
 
     for ti, record in setup_type_stream.get_ti_and_record_for_name(name = "Yolo"):
@@ -106,4 +102,9 @@ def test_type_lookup_by_type_name(setup_type_stream : PdbTypeStream):
         assert BasicTypeInfo(y.field_type) == (BasicTypeEnum.Float32, BasicTypeModifier.Direct)
         assert BasicTypeInfo(z.field_type) == (BasicTypeEnum.Float64, BasicTypeModifier.NearPointer64)
 
-
+def test_module_information(setup_debuginformation_stream : PdbDebugInformationStream):
+    for module in setup_debuginformation_stream.modules:
+        if module.module.lower().endswith('.obj'):
+            assert module.object.lower().endswith('.lib') or module.object == module.module
+    print(setup_debuginformation_stream.header)
+    

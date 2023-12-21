@@ -55,20 +55,20 @@ class ModuleInformation(Structy):
     #module : str # cstring
     #object : str # cstring
 
+    def __init__(self):
+        super().__init__(self)
+        self.module : str = "" # Usually object file (which might have gone into lib)
+        self.object : str = "" # Usually lib file (or same as object file)
+
 
     @classmethod
     def from_memory(cls, mem : memoryview, debug : bool) -> Tuple['ModuleInformation', int]:
         my_size = c_sizeof(cls)
-        print(my_size)
-        print(c_sizeof(ModuleInformation))
         self : ModuleInformation = cls.from_buffer_copy(mem)
-        self.module, bytecount = read_stringz(mem[my_size:])
-        self.object, _ = read_stringz(mem[my_size + bytecount:])
+        self.module, bytecount_module = read_stringz(mem[my_size:])
+        self.object, bytecount_object = read_stringz(mem[my_size + bytecount_module:])
 
-        print("asd")
-        print(self.module)
-        print(self.object)
-        return self, my_size + len(self.module) + len(self.object)
+        return self, ((my_size + bytecount_module + bytecount_object + 3) // 4) * 4
 
 
 
