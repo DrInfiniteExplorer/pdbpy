@@ -1,0 +1,525 @@
+
+
+                          Summary                           
+============================================================
+  Block Size: 4096
+  Number of blocks: 27
+  Number of streams: 21
+  Signature: 1704572239
+  Age: 1
+  GUID: {A4EF112D-A965-4045-8E4D-9C0D3F83222C}
+  Features: 0x1
+  Has Debug Info: true
+  Has Types: true
+  Has IDs: true
+  Has Globals: true
+  Has Publics: true
+  Is incrementally linked: true
+  Has conflicting types: false
+  Is stripped: false
+
+
+                          Streams                           
+============================================================
+  Stream  0 (        48 bytes): [Old MSF Directory]
+             Blocks: [7]
+  Stream  1 (       199 bytes): [PDB Stream]
+             Blocks: [20]
+  Stream  2 (       160 bytes): [TPI Stream]
+             Blocks: [19]
+  Stream  3 (       801 bytes): [DBI Stream]
+             Blocks: [15]
+  Stream  4 (      1054 bytes): [IPI Stream]
+             Blocks: [21]
+  Stream  5 (         0 bytes): [Named Stream "/LinkInfo"]
+             Blocks: []
+  Stream  6 (        40 bytes): [Named Stream "/TMCache"]
+             Blocks: [16]
+  Stream  7 (        82 bytes): [Named Stream "/names"]
+             Blocks: [17]
+  Stream  8 (       420 bytes): [Module "F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj"]
+             Blocks: [9]
+  Stream  9 (       448 bytes): [???]
+             Blocks: [18]
+  Stream 10 (       716 bytes): [Module "* Linker *"]
+             Blocks: [11]
+  Stream 11 (       556 bytes): [Global Symbol Hash]
+             Blocks: [12]
+  Stream 12 (       200 bytes): [Section Header Data]
+             Blocks: [8]
+  Stream 13 (       152 bytes): [Symbol Records]
+             Blocks: [13]
+  Stream 14 (         0 bytes): [Named Stream "/src/headerblock"]
+             Blocks: []
+  Stream 15 (       620 bytes): [Public Symbol Hash]
+             Blocks: [14]
+  Stream 16 (        24 bytes): [TPI Hash]
+             Blocks: [22]
+  Stream 17 (         0 bytes): [Named Stream "/UDTSRCLINEUNDONE"]
+             Blocks: []
+  Stream 18 (        52 bytes): [IPI Hash]
+             Blocks: [23]
+  Stream 19 (4294967295 bytes): [???]
+             Blocks: []
+  Stream 20 (         0 bytes): [Named Stream "sourcelink$1"]
+             Blocks: []
+
+
+                        Module Stats                        
+============================================================
+Mod 0000 | `F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj`: 
+  Stream 8, 420 bytes
+  
+    Symbols
+                                       Total:      11 entries (         292 bytes)
+    --------------------------------------------------------------------------
+                                   S_GPROC32:       1 entries (          60 bytes)
+                                  S_COMPILE3:       1 entries (          60 bytes)
+                                S_UNAMESPACE:       4 entries (          60 bytes)
+                                   S_OBJNAME:       1 entries (          52 bytes)
+                                 S_FRAMEPROC:       1 entries (          32 bytes)
+                                  S_REGREL32:       1 entries (          16 bytes)
+                                 S_BUILDINFO:       1 entries (           8 bytes)
+                                       S_END:       1 entries (           4 bytes)
+  
+    Chunks
+                                       Total:       2 entries (         112 bytes)
+    --------------------------------------------------------------------------
+                               DEBUG_S_LINES:       1 entries (          64 bytes)
+                          DEBUG_S_FILECHKSMS:       1 entries (          48 bytes)
+Mod 0001 | `* Linker *`: 
+  Stream 10, 716 bytes
+  
+    Symbols
+                                       Total:      16 entries (         708 bytes)
+    --------------------------------------------------------------------------
+                                  S_ENVBLOCK:       1 entries (         284 bytes)
+                                 S_COFFGROUP:       7 entries (         196 bytes)
+                                   S_SECTION:       5 entries (         140 bytes)
+                                  S_COMPILE3:       1 entries (          48 bytes)
+                                S_TRAMPOLINE:       1 entries (          20 bytes)
+                                   S_OBJNAME:       1 entries (          20 bytes)
+  
+    Chunks
+                                       Total:       0 entries (           0 bytes)
+    --------------------------------------------------------------------------
+  Summary |
+    
+      Symbols
+                                         Total:      27 entries (       1,000 bytes)
+      --------------------------------------------------------------------------
+                                    S_ENVBLOCK:       1 entries (         284 bytes)
+                                   S_COFFGROUP:       7 entries (         196 bytes)
+                                     S_SECTION:       5 entries (         140 bytes)
+                                    S_COMPILE3:       2 entries (         108 bytes)
+                                     S_OBJNAME:       2 entries (          72 bytes)
+                                     S_GPROC32:       1 entries (          60 bytes)
+                                  S_UNAMESPACE:       4 entries (          60 bytes)
+                                   S_FRAMEPROC:       1 entries (          32 bytes)
+                                  S_TRAMPOLINE:       1 entries (          20 bytes)
+                                    S_REGREL32:       1 entries (          16 bytes)
+                                   S_BUILDINFO:       1 entries (           8 bytes)
+                                         S_END:       1 entries (           4 bytes)
+    
+      Chunks
+                                         Total:       2 entries (         112 bytes)
+      --------------------------------------------------------------------------
+                                 DEBUG_S_LINES:       1 entries (          64 bytes)
+                            DEBUG_S_FILECHKSMS:       1 entries (          48 bytes)
+
+
+                     S_UDT Record Stats                     
+============================================================
+    
+      Record Kind | Count  Size
+    ----------------------------
+    ----------------------------
+    Total (S_UDT) |     0     0
+    ----------------------------
+
+
+                        String Table                        
+============================================================
+  ID | String
+   1 | 'F:\kod\pdbpy\pdbpy\example_pdbs\windows.cpp'
+  
+  String Table Header:
+    Signature: 4026462206
+    Hash Version: 1
+    Name Buffer Size: 46
+    
+  Name Buffer (
+    0000: 00463A5C 6B6F645C 70646270 795C7064 6270795C 6578616D 706C655F 70646273  |.F:\kod\pdbpy\pdbpy\example_pdbs|
+    0020: 5C77696E 646F7773 2E637070 0000                                          |\windows.cpp..|
+  )
+  
+  Hash Table:
+    Bucket Count: 4
+    Bucket[0] : 45
+    Bucket[1] : 0
+    Bucket[2] : 0
+    Bucket[3] : 1
+    Name Count: 2
+
+
+                          Modules                           
+============================================================
+  Mod 0000 | `F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj`: 
+  SC[.text]  | mod = 0, 0001:0016, size = 54, data crc = 3958286795, reloc crc = 0
+          IMAGE_SCN_CNT_CODE | IMAGE_SCN_ALIGN_16BYTES | IMAGE_SCN_MEM_EXECUTE | 
+          IMAGE_SCN_MEM_READ
+  Obj: `F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj`: 
+  debug stream: 8, # files: 1, has ec info: false
+  pdb file ni: 0 ``, src file ni: 0 ``
+Mod 0001 | `* Linker *`: 
+SC[.text]  | mod = 1, 0001:0000, size = 10, data crc = 0, reloc crc = 0
+        IMAGE_SCN_CNT_CODE | IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ
+Obj: ``: 
+debug stream: 10, # files: 0, has ec info: false
+pdb file ni: 1 `F:\kod\pdbpy\pdbpy\example_pdbs\windows.pdb`, src file ni: 0 ``
+
+                           Files                            
+============================================================
+Mod 0000 | `F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj`: 
+- (SHA-256: 73455C583B2490597EE45D30FBDF874322341D62A6ABC867083831168604D0A5) F:\kod\pdbpy\pdbpy\example_pdbs\windows.cpp
+Mod 0001 | `* Linker *`: 
+
+                           Lines                            
+============================================================
+Mod 0000 | `F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj`: 
+F:\kod\pdbpy\pdbpy\example_pdbs\windows.cpp (SHA-256: 73455C583B2490597EE45D30FBDF874322341D62A6ABC867083831168604D0A5)
+  0001:00000010-00000046, line/addr entries = 4
+    17 00000010     18 00000014     19 00000032     20 00000041   
+  
+Mod 0001 | `* Linker *`: 
+
+                       Inlinee Lines                        
+============================================================
+Mod 0000 | `F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj`: 
+Mod 0001 | `* Linker *`: 
+
+                    Cross Module Imports                    
+============================================================
+Mod 0000 | `F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj`: 
+Mod 0001 | `* Linker *`: 
+
+                    Cross Module Exports                    
+============================================================
+Mod 0000 | `F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj`: 
+Mod 0001 | `* Linker *`: 
+
+                        Old FPO Data                        
+============================================================
+    FPO stream not present
+
+                        New FPO Data                        
+============================================================
+    New FPO stream not present
+
+                     Types (TPI Stream)                     
+============================================================
+  Showing 4 records
+  0x1000 | LF_ARGLIST [size = 8, hash = 0x32484]
+  0x1001 | LF_PROCEDURE [size = 16, hash = 0x27EE9]
+           return type = 0x0074 (int), # args = 0, param list = 0x1000
+           calling conv = cdecl, options = None
+  0x1002 | LF_FIELDLIST [size = 40, hash = 0x3216D]
+           - LF_MEMBER [name = `x`, Type = 0x0074 (int), offset = 0, attrs = public]
+           - LF_MEMBER [name = `y`, Type = 0x0040 (float), offset = 4, attrs = public]
+           - LF_MEMBER [name = `z`, Type = 0x0641 (double*), offset = 8, attrs = public]
+  0x1003 | LF_STRUCTURE [size = 40, hash = 0x2096D] `Yolo`
+           unique name: `.?AUYolo@@`
+           vtable: <no type>, base list: <no type>, field list: 0x1002
+           options: has unique name, sizeof 16
+  
+  Header Version: 20040203
+  Hash Stream Index: 16
+  Aux Hash Stream Index: 65535
+  Hash Key Size: 4
+  Num Hash Buckets: 262143
+  Type Index Offsets:
+    TI: 0x1000, Offset: 0
+  
+  Hash Adjusters:
+
+                     Types (IPI Stream)                     
+============================================================
+  Showing 11 records
+  0x1000 | LF_FUNC_ID [size = 32, hash = 0xC61C]
+           name = WinMainCRTStartup, type = 0x1001, parent scope = <no type>
+  0x1001 | LF_UDT_MOD_SRC_LINE [size = 18, hash = 0x1C0A]
+           udt = 0x1003, mod = 1, file = 1, line = 8
+  0x1002 | LF_STRING_ID [size = 40, hash = 0x2957C] ID: <no type>, String: F:\kod\pdbpy\pdbpy\example_pdbs
+  0x1003 | LF_STRING_ID [size = 116, hash = 0x515E] ID: <no type>, String: C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\bin\HostX64\x64\cl.exe
+  0x1004 | LF_STRING_ID [size = 20, hash = 0x35FFD] ID: <no type>, String: windows.cpp
+  0x1005 | LF_STRING_ID [size = 52, hash = 0x10E96] ID: <no type>, String: F:\kod\pdbpy\pdbpy\example_pdbs\vc140.pdb
+  0x1006 | LF_STRING_ID [size = 248, hash = 0x3A454] ID: <no type>, String: -Gm- -GR- -EHa- -Oi -Zi -MT -I"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\ATLMFC\include" -I"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include" -I"C:\Program
+  0x1007 | LF_STRING_ID [size = 268, hash = 0x3CA20] ID: <no type>, String:  Files (x86)\Windows Kits\NETFXSDK\4.6.2\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um"
+  0x1008 | LF_SUBSTR_LIST [size = 16, hash = 0x3C915]
+           0x1006: `-Gm- -GR- -EHa- -Oi -Zi -MT -I"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\ATLMFC\include" -I"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include" -I"C:\Program`
+           0x1007: ` Files (x86)\Windows Kits\NETFXSDK\4.6.2\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um"`
+  0x1009 | LF_STRING_ID [size = 160, hash = 0x3AB60] ID: 0x1008, String:  -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\cppwinrt" -TP -X
+  0x100A | LF_BUILDINFO [size = 28, hash = 0x16069]
+           0x1002: `F:\kod\pdbpy\pdbpy\example_pdbs`
+           0x1003: `C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\bin\HostX64\x64\cl.exe`
+           0x1004: `windows.cpp`
+           0x1005: `F:\kod\pdbpy\pdbpy\example_pdbs\vc140.pdb`
+           0x1009: ` -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\cppwinrt" -TP -X`
+  
+  Header Version: 20040203
+  Hash Stream Index: 18
+  Aux Hash Stream Index: 65535
+  Hash Key Size: 4
+  Num Hash Buckets: 262143
+  Type Index Offsets:
+    TI: 0x1000, Offset: 0
+  
+  Hash Adjusters:
+
+                       Global Symbols                       
+============================================================
+  Records
+      32 | S_GDATA32 [size = 24] `_fltused`
+           type = 0x0074 (int), addr = 0003:0000
+       0 | S_PROCREF [size = 32] `WinMainCRTStartup`
+           module = 1, sum name = 0, offset = 176
+
+                       Public Symbols                       
+============================================================
+  Records
+     128 | S_PUB32 [size = 24] `_fltused`
+           flags = none, addr = 0003:0000
+      56 | S_PUB32 [size = 32] `__real@40000000`
+           flags = none, addr = 0002:0000
+      88 | S_PUB32 [size = 40] `?WinMainCRTStartup@@YAHXZ`
+           flags = function, addr = 0001:0016
+
+                          Symbols                           
+============================================================
+  Mod 0000 | `F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj`: 
+       4 | S_OBJNAME [size = 52] sig=0, `F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj`
+      56 | S_COMPILE3 [size = 60]
+           machine = intel x86-x64, Ver = Microsoft (R) Optimizing Compiler, language = c++
+           frontend = 19.31.31104.0, backend = 19.31.31104.0
+           flags = security checks | hot patchable
+     116 | S_UNAMESPACE [size = 20] `__vc_attributes`
+     136 | S_UNAMESPACE [size = 24] `helper_attributes`
+     160 | S_UNAMESPACE [size = 8] `atl`
+     168 | S_UNAMESPACE [size = 8] `std`
+     176 | S_GPROC32 [size = 60] `WinMainCRTStartup`
+           parent = 0, end = 284, addr = 0001:0016, code size = 54
+           type = `0x1001 (int ())`, debug start = 4, debug end = 49, flags = none
+     236 | S_FRAMEPROC [size = 32]
+           size = 24, padding size = 0, offset to padding = 0
+           bytes of callee saved registers = 0, exception handler addr = 0000:0000
+           local fp reg = RSP, param fp reg = RSP
+           flags = has async eh | opt speed
+     268 | S_REGREL32 [size = 16] `y`
+           type = 0x1003 (Yolo), register = RSP, offset = 0
+     284 | S_END [size = 4]
+     288 | S_BUILDINFO [size = 8] BuildId = `0x100A`
+Mod 0001 | `* Linker *`: 
+     4 | S_OBJNAME [size = 20] sig=0, `* Linker *`
+    24 | S_COMPILE3 [size = 48]
+         machine = intel x86-x64, Ver = Microsoft (R) LINK, language = link
+         frontend = 0.0.0.0, backend = 14.31.31104.0
+         flags = none
+    72 | S_ENVBLOCK [size = 284]
+         - cwd
+         - F:\kod\pdbpy\pdbpy\example_pdbs
+         - exe
+         - C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\bin\HostX64\x64\link.exe
+         - pdb
+         - F:\kod\pdbpy\pdbpy\example_pdbs\windows.pdb
+         - cmd
+         -  /errorreport:prompt /out:windows.exe /debug -NODEFAULTLIB -subsystem:windows
+   356 | S_TRAMPOLINE [size = 20]
+         type = tramp incremental, size = 5, source = 0001:0005, target = 0001:0005
+   376 | S_SECTION [size = 28] `.text`
+         length = 4183, alignment = 12, rva = 4096, section # = 1
+         characteristics =
+           code
+           execute permissions
+           read permissions
+   404 | S_COFFGROUP [size = 28] `.text$mn`
+         length = 4183, addr = 0001:0000
+         characteristics =
+           code
+           execute permissions
+           read permissions
+   432 | S_SECTION [size = 28] `.rdata`
+         length = 1212, alignment = 12, rva = 12288, section # = 2
+         characteristics =
+           initialized data
+           read permissions
+   460 | S_COFFGROUP [size = 28] `.rdata`
+         length = 328, addr = 0002:0000
+         characteristics =
+           initialized data
+           read permissions
+   488 | S_COFFGROUP [size = 32] `.rdata$zzzdbg`
+         length = 364, addr = 0002:0328
+         characteristics =
+           initialized data
+           read permissions
+   520 | S_COFFGROUP [size = 28] `.xdata`
+         length = 520, addr = 0002:0692
+         characteristics =
+           initialized data
+           read permissions
+   548 | S_COFFGROUP [size = 28] `.edata`
+         length = 0, addr = 0002:1212
+         characteristics =
+           initialized data
+           read permissions
+   576 | S_SECTION [size = 28] `.data`
+         length = 4, alignment = 12, rva = 16384, section # = 3
+         characteristics =
+           initialized data
+           read permissions
+           write permissions
+   604 | S_COFFGROUP [size = 24] `.bss`
+         length = 4, addr = 0003:0000
+         characteristics =
+           uninitialized data
+           read permissions
+           write permissions
+   628 | S_SECTION [size = 28] `.pdata`
+         length = 312, alignment = 12, rva = 20480, section # = 4
+         characteristics =
+           initialized data
+           read permissions
+   656 | S_COFFGROUP [size = 28] `.pdata`
+         length = 312, addr = 0004:0000
+         characteristics =
+           initialized data
+           read permissions
+   684 | S_SECTION [size = 28] `.reloc`
+         length = 8, alignment = 12, rva = 24576, section # = 5
+         characteristics =
+           initialized data
+           discardable
+           read permissions
+
+                      Section Headers                       
+============================================================
+  
+  SECTION HEADER #1
+     .text name
+      1057 virtual size
+      1000 virtual address
+      1200 size of raw data
+       400 file pointer to raw data
+         0 file pointer to relocation table
+         0 file pointer to line numbers
+         0 number of relocations
+         0 number of line numbers
+  60000020 flags
+           IMAGE_SCN_CNT_CODE
+           IMAGE_SCN_MEM_EXECUTE
+           IMAGE_SCN_MEM_READ
+  
+  SECTION HEADER #2
+    .rdata name
+       4BC virtual size
+      3000 virtual address
+       600 size of raw data
+      1600 file pointer to raw data
+         0 file pointer to relocation table
+         0 file pointer to line numbers
+         0 number of relocations
+         0 number of line numbers
+  40000040 flags
+           IMAGE_SCN_CNT_INITIALIZED_DATA
+           IMAGE_SCN_MEM_READ
+  
+  SECTION HEADER #3
+     .data name
+         4 virtual size
+      4000 virtual address
+         0 size of raw data
+         0 file pointer to raw data
+         0 file pointer to relocation table
+         0 file pointer to line numbers
+         0 number of relocations
+         0 number of line numbers
+  C0000040 flags
+           IMAGE_SCN_CNT_INITIALIZED_DATA
+           IMAGE_SCN_MEM_READ
+           IMAGE_SCN_MEM_WRITE
+  
+  SECTION HEADER #4
+    .pdata name
+       138 virtual size
+      5000 virtual address
+       200 size of raw data
+      1C00 file pointer to raw data
+         0 file pointer to relocation table
+         0 file pointer to line numbers
+         0 number of relocations
+         0 number of line numbers
+  40000040 flags
+           IMAGE_SCN_CNT_INITIALIZED_DATA
+           IMAGE_SCN_MEM_READ
+  
+  SECTION HEADER #5
+    .reloc name
+         8 virtual size
+      6000 virtual address
+       200 size of raw data
+      1E00 file pointer to raw data
+         0 file pointer to relocation table
+         0 file pointer to line numbers
+         0 number of relocations
+         0 number of line numbers
+  42000040 flags
+           IMAGE_SCN_CNT_INITIALIZED_DATA
+           IMAGE_SCN_MEM_DISCARDABLE
+           IMAGE_SCN_MEM_READ
+
+                  Original Section Headers                  
+============================================================
+  PDB does not contain the requested image section header type
+
+                   Section Contributions                    
+============================================================
+  SC[.text]   | mod = 1, 0001:0000, size = 10, data crc = 0, reloc crc = 0
+                IMAGE_SCN_CNT_CODE | IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ
+  SC[.text]   | mod = 0, 0001:0016, size = 54, data crc = 3958286795, reloc crc = 0
+                IMAGE_SCN_CNT_CODE | IMAGE_SCN_ALIGN_16BYTES | IMAGE_SCN_MEM_EXECUTE | 
+                IMAGE_SCN_MEM_READ
+  SC[.rdata]  | mod = 0, 0002:0000, size = 4, data crc = 1994146192, reloc crc = 0
+                IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_LNK_COMDAT | IMAGE_SCN_ALIGN_4BYTES | 
+                IMAGE_SCN_MEM_READ
+  SC[.rdata]  | mod = 1, 0002:0004, size = 56, data crc = 0, reloc crc = 0
+                IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_ALIGN_4BYTES | IMAGE_SCN_MEM_READ
+  SC[.rdata]  | mod = 1, 0002:0328, size = 68, data crc = 0, reloc crc = 0
+                IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_ALIGN_4BYTES | IMAGE_SCN_MEM_READ
+  SC[.rdata]  | mod = 1, 0002:0396, size = 20, data crc = 0, reloc crc = 0
+                IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_ALIGN_4BYTES | IMAGE_SCN_MEM_READ
+  SC[.rdata]  | mod = 0, 0002:0692, size = 8, data crc = 1192424177, reloc crc = 0
+                IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_ALIGN_4BYTES | IMAGE_SCN_MEM_READ
+  SC[.data]   | mod = 0, 0003:0000, size = 4, data crc = 0, reloc crc = 0
+                IMAGE_SCN_CNT_UNINITIALIZED_DATA | IMAGE_SCN_ALIGN_4BYTES | IMAGE_SCN_MEM_READ | 
+                IMAGE_SCN_MEM_WRITE
+
+                        Section Map                         
+============================================================
+  Section 0000 | ovl = 0, group = 0, frame = 1, name = 65535
+                 class = 65535, offset = 0, size = 4183
+                 flags = read | execute | 32 bit addr | selector
+  Section 0001 | ovl = 0, group = 0, frame = 2, name = 65535
+                 class = 65535, offset = 0, size = 1212
+                 flags = read | 32 bit addr | selector
+  Section 0002 | ovl = 0, group = 0, frame = 3, name = 65535
+                 class = 65535, offset = 0, size = 4
+                 flags = read | write | 32 bit addr | selector
+  Section 0003 | ovl = 0, group = 0, frame = 4, name = 65535
+                 class = 65535, offset = 0, size = 312
+                 flags = read | 32 bit addr | selector
+  Section 0004 | ovl = 0, group = 0, frame = 5, name = 65535
+                 class = 65535, offset = 0, size = 8
+                 flags = read | 32 bit addr | selector
+  Section 0005 | ovl = 0, group = 0, frame = 0, name = 65535
+                 class = 65535, offset = 0, size = 4294967295
+                 flags = 32 bit addr | absolute addr

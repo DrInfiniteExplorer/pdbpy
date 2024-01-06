@@ -1,4 +1,9 @@
-#include <windows.h>
+//#include <windows.h>
+
+extern "C"
+{
+	int _fltused;
+}
 
 struct Yolo
 {
@@ -7,9 +12,10 @@ struct Yolo
 	double* z;
 };
 
-int main(int argc, char* argv[])
+
+int __stdcall WinMainCRTStartup()
 {
 	Yolo y = {1, 2, nullptr};
-	return y.x * y.y;
+    return y.x * y.y;
 }
 

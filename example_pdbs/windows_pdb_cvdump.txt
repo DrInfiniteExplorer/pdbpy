@@ -1,0 +1,403 @@
+Microsoft (R) Debugging Information Dumper  Version 14.00.23611
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+*** IDs
+
+0x1000 : Length = 30, Leaf = 0x1601 LF_FUNC_ID
+	Type = 0x1001		Scope = global	WinMainCRTStartup
+
+0x1001 : Length = 16, Leaf = 0x1607 LF_UDT_MOD_SRC_LINE
+	type = 0x1003, mod = 1, source file = F:\kod\pdbpy\pdbpy\example_pdbs\windows.cpp, line = 8
+
+0x1002 : Length = 38, Leaf = 0x1605 LF_STRING_ID
+	F:\kod\pdbpy\pdbpy\example_pdbs
+	No sub string
+
+0x1003 : Length = 114, Leaf = 0x1605 LF_STRING_ID
+	C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\bin\HostX64\x64\cl.exe
+	No sub string
+
+0x1004 : Length = 18, Leaf = 0x1605 LF_STRING_ID
+	windows.cpp
+	No sub string
+
+0x1005 : Length = 50, Leaf = 0x1605 LF_STRING_ID
+	F:\kod\pdbpy\pdbpy\example_pdbs\vc140.pdb
+	No sub string
+
+0x1006 : Length = 246, Leaf = 0x1605 LF_STRING_ID
+	-Gm- -GR- -EHa- -Oi -Zi -MT -I"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\ATLMFC\include" -I"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include" -I"C:\Program
+	No sub string
+
+0x1007 : Length = 266, Leaf = 0x1605 LF_STRING_ID
+	 Files (x86)\Windows Kits\NETFXSDK\4.6.2\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um"
+	No sub string
+
+0x1008 : Length = 14, Leaf = 0x1604 LF_SUBSTR_LIST
+	String ID's (count = 2): 0x1006 0x1007
+
+0x1009 : Length = 158, Leaf = 0x1605 LF_STRING_ID
+	 -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\cppwinrt" -TP -X
+	List of sub string ID's = 0x1008
+
+0x100a : Length = 26, Leaf = 0x1603 LF_BUILDINFO
+	String ID's (count = 5): 0x1002 0x1003 0x1004 0x1005 0x1009
+
+
+*** MODULES
+
+0001 "F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj"
+0002 "" "* Linker *"
+
+*** PUBLICS
+
+S_PUB32: [0003:00000000], Flags: 00000000, _fltused
+S_PUB32: [0002:00000000], Flags: 00000000, __real@40000000
+S_PUB32: [0001:00000010], Flags: 00000002, ?WinMainCRTStartup@@YAHXZ
+
+
+*** TYPES
+
+0x1000 : Length = 6, Leaf = 0x1201 LF_ARGLIST argument count = 0
+
+0x1001 : Length = 14, Leaf = 0x1008 LF_PROCEDURE
+	Return type = T_INT4(0074), Call type = C Near
+	Func attr = none
+	# Parms = 0, Arg list type = 0x1000
+
+0x1002 : Length = 38, Leaf = 0x1203 LF_FIELDLIST
+	list[0] = LF_MEMBER, public, type = T_INT4(0074), offset = 0
+		member name = 'x'
+	list[1] = LF_MEMBER, public, type = T_REAL32(0040), offset = 4
+		member name = 'y'
+	list[2] = LF_MEMBER, public, type = T_64PREAL64(0641), offset = 8
+		member name = 'z'
+
+0x1003 : Length = 38, Leaf = 0x1505 LF_STRUCTURE
+	# members = 3,  field list type 0x1002, 
+	Derivation list type 0x0000, VT shape type 0x0000
+	Size = 16, class name = Yolo, unique name = .?AUYolo@@, UDT(0x00001003)
+
+
+*** TYPES Mismatch Warnings
+
+
+*** SYMBOLS
+
+** Module: "F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj"
+
+(000004) S_OBJNAME: Signature: 00000000, F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj
+
+(000038) S_COMPILE3:
+         Language: C++
+         Target processor: x64
+         Compiled for edit and continue: no
+         Compiled without debugging info: no
+         Compiled with LTCG: no
+         Compiled with /bzalign: no
+         Managed code present: no
+         Compiled with /GS: yes
+         Compiled with /hotpatch: yes
+         Converted by CVTCIL: no
+         MSIL module: no
+         Compiled with /sdl: no
+         Compiled with pgo: no
+         .EXP module: no
+         Pad bits = 0x0000
+         Frontend Version: Major = 19, Minor = 31, Build = 31104, QFE = 0
+         Backend Version: Major = 19, Minor = 31, Build = 31104, QFE = 0
+         Version string: Microsoft (R) Optimizing Compiler
+
+(000074) S_UNAMESPACE: __vc_attributes
+(000088) S_UNAMESPACE: helper_attributes
+(0000A0) S_UNAMESPACE: atl
+(0000A8) S_UNAMESPACE: std
+
+(0000B0) S_GPROC32: [0001:00000010], Cb: 00000036, Type:             0x1001, WinMainCRTStartup
+         Parent: 00000000, End: 0000011C, Next: 00000000
+         Debug start: 00000004, Debug end: 00000031
+
+(0000EC)  S_FRAMEPROC:
+          Frame size = 0x00000018 bytes
+          Pad size = 0x00000000 bytes
+          Offset of pad in frame = 0x00000000
+          Size of callee save registers = 0x00000000
+          Address of exception handler = 0000:00000000
+          Function info: asynceh invalid_pgo_counts opt_for_speed Local=rsp Param=rsp (0x00114200)
+(00010C)  S_REGREL32: rsp+00000000, Type:             0x1003, y
+
+(00011C) S_END
+
+(000120) S_BUILDINFO:             0x100A
+
+** Module: "* Linker *" from ""
+
+(000004) S_OBJNAME: Signature: 00000000, * Linker *
+
+(000018) S_COMPILE3:
+         Language: LINK
+         Target processor: x64
+         Compiled for edit and continue: no
+         Compiled without debugging info: no
+         Compiled with LTCG: no
+         Compiled with /bzalign: no
+         Managed code present: no
+         Compiled with /GS: no
+         Compiled with /hotpatch: no
+         Converted by CVTCIL: no
+         MSIL module: no
+         Compiled with /sdl: no
+         Compiled with pgo: no
+         .EXP module: no
+         Pad bits = 0x0000
+         Frontend Version: Major = 0, Minor = 0, Build = 0, QFE = 0
+         Backend Version: Major = 14, Minor = 31, Build = 31104, QFE = 0
+         Version string: Microsoft (R) LINK
+
+(000048) S_ENVBLOCK:
+         Compiled for edit and continue: no
+         Command block:
+          cwd = 'F:\kod\pdbpy\pdbpy\example_pdbs'
+          exe = 'C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\bin\HostX64\x64\link.exe'
+          pdb = 'F:\kod\pdbpy\pdbpy\example_pdbs\windows.pdb'
+          cmd = ' /errorreport:prompt /out:windows.exe /debug -NODEFAULTLIB -subsystem:windows'
+
+(000164) S_TRAMPOLINE: subtype Incremental, code size = 5 bytes
+         Thunk address: [0001:00000005]
+         Thunk target:  [0001:00000010]
+
+(000178) S_SECTION: [0001], RVA = 00001000, Cb = 00001057, Align = 00001000, Characteristics = 60000020, .text
+(000194) S_COFFGROUP: [0001:00000000], Cb: 00001057, Characteristics = 60000020, .text$mn
+(0001B0) S_SECTION: [0002], RVA = 00003000, Cb = 000004BC, Align = 00001000, Characteristics = 40000040, .rdata
+(0001CC) S_COFFGROUP: [0002:00000000], Cb: 00000148, Characteristics = 40000040, .rdata
+(0001E8) S_COFFGROUP: [0002:00000148], Cb: 0000016C, Characteristics = 40000040, .rdata$zzzdbg
+(000208) S_COFFGROUP: [0002:000002B4], Cb: 00000208, Characteristics = 40000040, .xdata
+(000224) S_COFFGROUP: [0002:000004BC], Cb: 00000000, Characteristics = 40000040, .edata
+(000240) S_SECTION: [0003], RVA = 00004000, Cb = 00000004, Align = 00001000, Characteristics = C0000040, .data
+(00025C) S_COFFGROUP: [0003:00000000], Cb: 00000004, Characteristics = C0000080, .bss
+(000274) S_SECTION: [0004], RVA = 00005000, Cb = 00000138, Align = 00001000, Characteristics = 40000040, .pdata
+(000290) S_COFFGROUP: [0004:00000000], Cb: 00000138, Characteristics = 40000040, .pdata
+(0002AC) S_SECTION: [0005], RVA = 00006000, Cb = 00000008, Align = 00001000, Characteristics = 42000040, .reloc
+
+
+*** GLOBALS
+
+S_GDATA32: [0003:00000000], Type:       T_INT4(0074), _fltused
+S_PROCREF: 0x00000000: (   1, 000000B0) WinMainCRTStartup
+
+
+*** COFF SYMBOL RVA
+
+** Module: "F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj"
+
+** Module: "* Linker *" from ""
+
+
+*** INLINEE LINES
+
+** Module: "F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj"
+
+** Module: "* Linker *" from ""
+
+
+*** LINES
+
+** Module: "F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj"
+
+  F:\kod\pdbpy\pdbpy\example_pdbs\windows.cpp (SHA_256: 73455C583B2490597EE45D30FBDF874322341D62A6ABC867083831168604D0A5), 0001:00000010-00000046, line/addr pairs = 4
+
+     17 00000010     18 00000014     19 00000032     20 00000041
+
+** Module: "* Linker *" from ""
+
+Mod::GetEnumLines failed
+
+
+*** IL LINES
+
+** Module: "F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj"
+
+** Module: "* Linker *" from ""
+
+Mod::GetEnumILLines failed
+
+
+*** SOURCE FILES
+
+** Module: "F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj"
+
+     0 F:\kod\pdbpy\pdbpy\example_pdbs\windows.cpp (SHA_256: 73455C583B2490597EE45D30FBDF874322341D62A6ABC867083831168604D0A5)
+
+** Module: "* Linker *" from ""
+
+
+*** SECTION CONTRIBUTIONS
+
+  Imod  Address        Size      Characteristics
+  0002  0001:00000000  0000000A  60000020
+  0001  0001:00000010  00000036  60500020
+  0001  0002:00000000  00000004  40301040
+  0002  0002:00000004  00000038  40300040
+  0002  0002:00000148  00000044  40300040
+  0002  0002:0000018C  00000014  40300040
+  0001  0002:000002B4  00000008  40300040
+  0001  0003:00000000  00000004  C0300080
+
+*** SEGMENT MAP
+
+Sec  flags  ovl   grp   frm sname cname    offset    cbSeg
+ 01  010d  0000  0000  0001  ffff  ffff  00000000 00001057
+ 02  0109  0000  0000  0002  ffff  ffff  00000000 000004bc
+ 03  010b  0000  0000  0003  ffff  ffff  00000000 00000004
+ 04  0109  0000  0000  0004  ffff  ffff  00000000 00000138
+ 05  0109  0000  0000  0005  ffff  ffff  00000000 00000008
+ 06  0208  0000  0000  0000  ffff  ffff  00000000 ffffffff
+
+*** FPO
+
+DBIOpenDbg(, dbgtypeFPO,) failed.
+DBIOpenDbg(, dbgtypeNewFPO,) failed.
+
+*** TokenMap
+
+DBIOpenDbg(, dbgtypeTokenRidMap,) failed.
+
+*** FIXUPS
+
+DBIOpenDbg(, dbgtypeFixup,) failed.
+
+*** OMAP FROM SRC
+
+DBIOpenDbg(, dbgtypeOmapFromSrc,) failed.
+
+*** OMAP TO SRC
+
+DBIOpenDbg(, dbgtypeOmapToSrc,) failed.
+
+*** PDATA/XDATA
+
+DBIOpenDbg(, dbgtypePdata,) failed.
+
+*** SECTION HEADERS
+
+
+SECTION HEADER #1
+   .text name
+    1057 virtual size
+    1000 virtual address
+    1200 size of raw data
+     400 file pointer to raw data
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+60000020 flags
+         Code
+         (no align specified)
+         Execute Read
+
+SECTION HEADER #2
+  .rdata name
+     4BC virtual size
+    3000 virtual address
+     600 size of raw data
+    1600 file pointer to raw data
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+40000040 flags
+         Initialized Data
+         (no align specified)
+         Read Only
+
+SECTION HEADER #3
+   .data name
+       4 virtual size
+    4000 virtual address
+       0 size of raw data
+       0 file pointer to raw data
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+C0000040 flags
+         Initialized Data
+         (no align specified)
+         Read Write
+
+SECTION HEADER #4
+  .pdata name
+     138 virtual size
+    5000 virtual address
+     200 size of raw data
+    1C00 file pointer to raw data
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+40000040 flags
+         Initialized Data
+         (no align specified)
+         Read Only
+
+SECTION HEADER #5
+  .reloc name
+       8 virtual size
+    6000 virtual address
+     200 size of raw data
+    1E00 file pointer to raw data
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+42000040 flags
+         Initialized Data
+         Discardable
+         (no align specified)
+         Read Only
+
+*** ORIGINAL SECTION HEADERS
+
+DBIOpenDbg(, dbgtypeSectionHdrOrig,) failed.
+
+*** CROSS MODULE EXPORTS
+
+** Module: "F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj"
+
+** Module: "* Linker *" from ""
+
+
+*** CROSS MODULE IMPORTS
+
+** Module: "F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj"
+
+** Module: "* Linker *" from ""
+
+
+*** FUNCTION TOKEN MAP
+
+** Module: "F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj"
+
+** Module: "* Linker *" from ""
+
+
+*** TYPE TOKEN MAP
+
+** Module: "F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj"
+
+** Module: "* Linker *" from ""
+
+
+*** MERGED ASSEMBLY INPUT
+
+** Module: "F:\kod\pdbpy\pdbpy\example_pdbs\windows.obj"
+
+** Module: "* Linker *" from ""
+
+
+*** STRINGTABLE
+
+00000001 F:\kod\pdbpy\pdbpy\example_pdbs\windows.cpp
+0000002d 

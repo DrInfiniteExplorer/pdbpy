@@ -1,0 +1,14 @@
+---
+MSF:
+  SuperBlock:
+    BlockSize:       4096
+    FreeBlockMap:    1
+    NumBlocks:       27
+    NumDirectoryBytes: 152
+    Unknown1:        0
+    BlockMapAddr:    25
+  NumDirectoryBlocks: 1
+  DirectoryBlocks: [ 24 ]
+  NumStreams:      0
+  FileSize:        110592
+...
