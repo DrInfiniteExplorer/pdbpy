@@ -2,12 +2,12 @@ from ctypes import sizeof as c_sizeof
 
 from dtypes.structify import structify
 from dtypes.typedefs import uint16_t
+from pdbpy.codeview.types import type_index
 
 from pdbpy.parsing import read_string
 
 from .base import record, PackedStructy, TypeProperties
 from pdbpy.codeview import LeafID
-from ...typing import type_index
 
 @record(LeafID.ENUM, LeafID.ENUM_ST)
 @structify
@@ -35,3 +35,5 @@ class Enum(PackedStructy):
         return post_read_offset, self
 
 assert Enum.underlying_type.offset == 6
+
+__all__ = ('Enum',)

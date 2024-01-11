@@ -5,7 +5,7 @@ from typing import List, Optional, Sequence, Union, overload
 def _test_observe_dummy(flags: int, buffer: memoryview):
     ...
 
-class MemoryWrapper():
+class MemoryWrapper(Sequence[int]):
     def __init__(self, sources : Sequence[Union[bytes, memoryview]], length : Optional[int] = None):
         self.memorywrapper_sources : Sequence[memoryview] = list(map(memoryview, sources))
         self.memorywrapper_copied : Optional[bytes] = None

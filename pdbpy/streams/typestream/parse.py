@@ -3,6 +3,8 @@ from typing import Optional, Tuple
 
 from dtypes.typedefs import uint16_t
 
+from pdbpy.codeview import LeafID
+
 from .records.base import PackedStructy, get_record_type_by_leaf_type
 
 def parse_record(mem : memoryview, record_content_offset:int, record_type:Optional[int] = None,

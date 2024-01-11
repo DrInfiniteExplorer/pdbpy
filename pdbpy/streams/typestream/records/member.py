@@ -3,12 +3,12 @@ from typing import Optional
 
 from dtypes.structify import structify
 from dtypes.typedefs import uint16_t
+from pdbpy.codeview.types import type_index
 
 from pdbpy.parsing import read_numeric, read_string
 
 from .base import record, PackedStructy, FieldAttributes
 from pdbpy.codeview import LeafID
-from ...typing import type_index
 
 @record(LeafID.MEMBER, LeafID.MEMBER_ST, LeafID.STMEMBER, LeafID.STMEMBER_ST)
 @structify
@@ -35,3 +35,4 @@ class Member(PackedStructy):
 
         return post_read_offset, self
 
+__all__ = ('Member',)

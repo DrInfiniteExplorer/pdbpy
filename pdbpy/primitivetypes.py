@@ -1,5 +1,6 @@
 from enum import IntEnum
-from pdbpy.streams.typing import type_index
+
+from pdbpy.codeview.types import type_index
 
 # See https://llvm.org/docs/PDB/TpiStream.html
 class BasicTypeEnum(IntEnum):
@@ -102,3 +103,5 @@ class BasicTypeInfo:
       typ, mod = other
       return self.type == typ and self.mod == mod
 
+
+__all__ = ('BasicTypeEnum', 'BasicTypeModifier', 'BasicTypeInfo')

@@ -4,8 +4,9 @@ from typing import Optional
 from dtypes.structify import structify
 from dtypes.typedefs import uint16_t
 
+from pdbpy.codeview.types import type_index
+
 from .base import record, PackedStructy, PointerAttributes, PointerModeEnum
-from ...typing import type_index
 from pdbpy.codeview import LeafID
 
 @record(LeafID.POINTER)
@@ -38,3 +39,6 @@ class Pointer(PackedStructy):
         
         assert post_read_offset == offset + record_size, f"{post_read_offset} != {offset + record_size}\n{self}"
         return post_read_offset, self
+
+
+__all__ = ('Pointer',)

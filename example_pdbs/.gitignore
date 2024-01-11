@@ -1,0 +1,8 @@
+*.ilk
+*.obj
+*.rsp
+*.txt
+*.yml
+*.lib
+*.exp
+vc140.pdb

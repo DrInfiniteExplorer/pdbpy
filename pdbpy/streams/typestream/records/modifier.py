@@ -4,9 +4,10 @@ from typing import Optional
 from dtypes.structify import structify
 from dtypes.typedefs import uint16_t
 
+from pdbpy.codeview.types import type_index
+
 from .base import record, PackedStructy
 from pdbpy.codeview import LeafID
-from ...typing import type_index
 
 @record(LeafID.MODIFIER)
 @structify
@@ -23,3 +24,5 @@ class Modifier(PackedStructy):
         post_read_offset = offset + my_size
 
         return post_read_offset, self
+
+__all__ = ('Modifier',)

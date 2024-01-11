@@ -5,10 +5,10 @@ from dtypes.structify import structify
 from dtypes.typedefs import uint16_t
 
 from pdbpy.codeview import LeafID
+from pdbpy.codeview.types import type_index
 from pdbpy.parsing import read_numeric, read_string
 
 from .base import record, PackedStructy, TypeProperties
-from ...typing import type_index
 
 
 structy_types = (LeafID.CLASS, LeafID.STRUCTURE, LeafID.INTERFACE, LeafID.CLASS_ST, LeafID.STRUCTURE_ST, LeafID.INTERFACE)
@@ -58,5 +58,5 @@ class TypeStructLike(PackedStructy):
 
 
         
-        #fields_byte_count =  
-        
+
+__all__ = ('TypeStructLike',)

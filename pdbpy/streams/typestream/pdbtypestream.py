@@ -1,5 +1,5 @@
+from pdbpy.codeview.types import type_index
 from pdbpy.msf import MultiStreamFileStream
-from pdbpy.streams.typing import type_index
 import pdbpy.utils.hash
 
 from typing import List, Iterable, Tuple

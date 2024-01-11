@@ -52,11 +52,12 @@ class MultiStreamFileStream(MemoryWrapper):
 
         self.parent = parent
         self.page_list = page_list
+        self.bytes = size_bytes
         
         self.streamname = streamname
         parent.children[streamname] = self
 
-        MemoryWrapper.__init__(self, sources = parent.map_pages(page_list))
+        MemoryWrapper.__init__(self, sources = parent.map_pages(page_list), length=self.bytes)
 
 class MultiStreamFile(BigHeader):
     """

@@ -2,12 +2,12 @@ from ctypes import sizeof as c_sizeof
 
 from dtypes.structify import structify
 from dtypes.typedefs import uint16_t
+from pdbpy.codeview.types import type_index
 
 from pdbpy.parsing import read_numeric
 
 from .base import record, PackedStructy, FieldAttributes
 from pdbpy.codeview import LeafID
-from ...typing import type_index
 
 
 @record(LeafID.BCLASS, LeafID.INTERFACE)
@@ -28,3 +28,5 @@ class BaseClass(PackedStructy):
         post_read_offset, self.offset = read_numeric(mem, post_read_offset)
 
         return post_read_offset, self
+
+__all__ = ('BaseClass',)

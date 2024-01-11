@@ -5,9 +5,9 @@ from dtypes.structify import structify
 from dtypes.typedefs import uint16_t, uint32_t
 
 from pdbpy.codeview import LeafID
+from pdbpy.codeview.types import type_index
 
 from .base import record, PackedStructy, FieldAttributes
-from ...typing import type_index
 
 @record(LeafID.VBCLASS, LeafID.IVBCLASS)
 @structify
@@ -30,3 +30,5 @@ class VirtualBaseClass(PackedStructy): # also indirect virtual
         post_read_offset = offset + my_size
 
         return post_read_offset, self
+
+__all__ = ('VirtualBaseClass',)

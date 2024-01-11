@@ -82,6 +82,9 @@ def read_stringz(mem: memoryview) -> Tuple[str, int]:
                 return joined, offset
         stuff.append(byte)
 
+def read_pascalstring(mem: memoryview) -> Tuple[str, int]:
+    count : int = mem[0]
+    return bytes(mem[1: 1+count]).decode('utf8'), 1+count
 
 
 def read_string(mem : memoryview, offset : int, leafy : Union[LeafID, int]) -> Tuple[int, str]:
@@ -105,6 +108,5 @@ def read_string(mem : memoryview, offset : int, leafy : Union[LeafID, int]) -> T
     else:
         # read u8, then that number of bytes
         #print("Pascal string")
-        count = mem[offset]
-        post_read_offset = offset + 1
-        return post_read_offset+count, bytes(mem[post_read_offset: post_read_offset+count]).decode('utf8')
+        string, bytecount = read_pascalstring(mem[offset:])
+        return offset + bytecount, string

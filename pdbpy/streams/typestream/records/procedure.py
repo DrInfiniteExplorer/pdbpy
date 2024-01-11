@@ -5,9 +5,9 @@ from dtypes.structify import structify
 from dtypes.typedefs import uint8_t, uint16_t
 
 from pdbpy.codeview import LeafID
+from pdbpy.codeview.types import type_index
 
 from .base import record, PackedStructy, FunctionAttributes
-from ...typing import type_index
 
 
 @record(LeafID.PROCEDURE)
@@ -29,3 +29,5 @@ class Procedure(PackedStructy):
         post_read_offset = offset + my_size
 
         return post_read_offset, self
+
+__all__ = ('Procedure',)
