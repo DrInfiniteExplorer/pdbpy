@@ -25,20 +25,24 @@ Over at [my blog](https://blog.luben.se/debugsymbols.html) I have some raw notes
 
 **In the future** just do `pip install pdbpy` and be happy!
 
-
-<examples n shit>
+From `test_symbol_address` in [test_windows_pdb.py](tests/test_windows_pdb.py)
+```py
+    pdb = PDB("example_pdbs/addr.pdb")
+    addr = pdb.find_symbol_address("global_variable")
+```
 
 
 ### Features!
 -------------
 
-| Feature                                                   | pdbpy |
-| :---                                                      | :---: |
-| Can open PDB                                              |  ✅  |
-| Can find a given type by name                             |  ✅  |
-| Uses the _Hash Stream_ to accelerate type lookup by name? |  ✅  |
-| Can look up symbols?                                      |  ❌  |
-| Can look up addresses?                                    |  ❌  |
+| Feature                                                   | pdbpy                     |
+| :---                                                      | :---:                     |
+| Can open PDB                                              |  ✅                      |
+| Can find a given type by name                             |  ✅                      |
+| Uses the _Hash Stream_ to accelerate type lookup by name? |  ✅                      |
+| Can look up symbols?                                      |  ✅ (from global table)  |
+| Can look up addresses?                                    |  ❌                      |
+
 
 
 
