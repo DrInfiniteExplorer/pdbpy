@@ -23,9 +23,14 @@ class DataSym(SymbolBase):
     # record_length     : uint16_t 
     # record_type       : uint16_t
     typ               : type_index
-    offset            : uint32_t
-    segment           : uint16_t
+    _offset            : uint32_t
+    _segment           : uint16_t
     # name : str
+
+    @property
+    def offset(self) -> int: return self._offset # type: ignore
+    @property
+    def segment(self) -> int: return self._segment # type: ignore
 
     
     @classmethod

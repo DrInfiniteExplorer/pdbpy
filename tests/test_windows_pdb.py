@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 import pytest
 from pdbpy.codeview import LeafID
@@ -5,6 +6,7 @@ from pdbpy.codeview.records.symbols.datasym import DataSym
 from pdbpy.codeview.symbols import SymEnum
 
 from pdbpy.msf import MultiStreamFile
+from pdbpy.pdb import PDB
 from pdbpy.pe.records import ImageSectionHeader
 from pdbpy.streams.debuginformationstream.debuginformationstream import PdbDebugInformationStream
 from pdbpy.streams.directorystream import StreamDirectoryStream
@@ -17,7 +19,6 @@ from pdbpy.streams.typestream.records import TypeStructLike, FieldList, Member, 
 from pdbpy.streams.typestream.records.base import TypeProperties, PointerTypeEnum, PointerModeEnum
 
 from pdbpy.primitivetypes import BasicTypeEnum, BasicTypeModifier, BasicTypeInfo
-from pdbpy.utils.range_keys import chunk
 
 
 @pytest.fixture
@@ -150,56 +151,23 @@ def test_symbol_records_stream(setup_symbol_record_stream: PdbSymbolRecordStream
     expected_symbols = ['_fltused', 'global_char_ptr_ptr', 'static_global_char_ptr_ptr', 'namespaced_global_char_ptr_ptr', 'export_global_char_ptr_ptr']
     assert expected_symbols == symbols
 
-def test_symbol_address():
-    with open("example_pdbs/addr.pdb", "rb") as f:
-        msf = MultiStreamFile(f)
-    stream = msf.get("Directory")
-    stream_directory = StreamDirectoryStream(stream)
-    info_file = stream_directory.get_stream_by_index(1)
-    info_stream = PdbInfoStream(info_file)
+def test_symbol_lookup():
+    pdb = PDB("example_pdbs/addr.pdb")
 
-    type_info_file = stream_directory.get_stream_by_index(2)
-    type_stream = PdbTypeStream(type_info_file, stream_directory, upfront_memory=False)
+    symbol = pdb.find_symbol("global_variable", types=[SymEnum.S_GDATA32])
 
-    debug_information_file = stream_directory.get_stream_by_index(3)
-    debug_infomation_stream = PdbDebugInformationStream(debug_information_file)
-
-    symbol_record_stream_number = debug_infomation_stream.header.symbol_record_stream
-
-    symbol_record_stream_file = stream_directory.get_stream_by_index(int(symbol_record_stream_number))
-    assert symbol_record_stream_file is not None
-
-    symbol_record_stream = PdbSymbolRecordStream(symbol_record_stream_file)
-
-    for symbol in symbol_record_stream.symbols(types=[SymEnum.S_GDATA32]):
-        if isinstance(symbol, DataSym):
-            if symbol.name == "global_variable":
-                break
+    assert symbol
     assert symbol.name == "global_variable"
-    print(symbol)
-    symbol.offset
-    symbol.segment
-    s=debug_infomation_stream.section_map[symbol.segment-1]
-    print(s)
-    sections = stream_directory.get_stream_by_index(int(debug_infomation_stream.dbg_header.section_header))
-    from ctypes import sizeof as c_sizeof
-    sections = [ImageSectionHeader.from_buffer_copy(section_mem) for section_mem in chunk(sections, c_sizeof(ImageSectionHeader))]
-    section = sections[symbol.segment-1]
-    print(section)
-    addr = section.virtual_address + symbol.offset
+    if not isinstance(symbol, DataSym):
+        return
+
+def test_symbol_address():
+    pdb = PDB("example_pdbs/addr.pdb")
+
+    addr = pdb.find_symbol_address("global_variable")
+    assert addr is not None
+
+    addr = f"{addr:016X}"
     print(addr)
-    print(f"0x{addr:08X}")
+    assert Path("example_pdbs/addr.txt").read_text().strip() == addr
         
-
-
-
-    asd()
-
-
-
-
-
-
-
-    
-

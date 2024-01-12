@@ -7,6 +7,7 @@ from pdbpy.streams.debuginformationstream.dbidbgheader import DbiDbgHeader
 from pdbpy.streams.debuginformationstream.dbistreamheader import PDBDbiStreamHeader
 from pdbpy.streams.debuginformationstream.moduleinformation import ModuleInformation
 from pdbpy.streams.debuginformationstream.sectionmap import SectionMapEntry, SectionMapHeader
+from pdbpy.utils.range_keys import chunk
 
 
 class PdbDebugInformationStream:
@@ -14,23 +15,24 @@ class PdbDebugInformationStream:
     This is often called the DBI stream.
 
     """
+
+    dbg_header: DbiDbgHeader
+
     def __init__(self, file: MultiStreamFileStream, upfront_memory : bool = False, debug : bool=False):
         self.debug = debug
         self.file = file
         self.modules : List[ModuleInformation] = []
         self.section_map : List[SectionMapEntry] = []
-        self.dbg_header: Optional[DbiDbgHeader] = None
 
         if upfront_memory:
             self.file = bytes(file)
 
         self.header = PDBDbiStreamHeader.from_buffer_copy(self.file[:c_sizeof(PDBDbiStreamHeader)])
 
-
         assert self.header.magic == 0xFFFFFFFF, f"DebugInformationStream magic bytes expected to be 0xFFFFFFFF, was 0x{self.header.magic:X}"
         #print(self.header)
 
-        # Parse modules
+        # Parse modules (variable sized)
         dbiex_area = memoryview(bytes(self.file[c_sizeof(self.header) : c_sizeof(self.header) + self.header.module_size]))
         while len(dbiex_area) != 0:
             module_info, bytecount = ModuleInformation.from_memory(memoryview(dbiex_area), False)
@@ -43,22 +45,16 @@ class PdbDebugInformationStream:
         section_contribution_start: int = c_sizeof(PDBDbiStreamHeader) + self.header.module_size
         section_contribution_end: int = section_contribution_start + self.header.section_contribution_stream_size
         
-        # Needed to map where in memory various global variables are located
+        # Thought this was going to be relevant, but it's not useful at all.
+        # See notes in `sectionmap.py` about usefullness.
         section_map_start: int = section_contribution_end
         section_map_end: int = section_map_start + self.header.section_map_size
         section_map_memory = self.file[section_map_start:section_map_end]
         section_map_header = SectionMapHeader.from_buffer_copy(section_map_memory)
         section_map_header.segment_count
-
-        # Thought this was going to be relevant, but it's not useful at all.
-        # See notes in `sectionmap.py` about usefullness.
         section_map_memory=section_map_memory[4:]
-        section_entry_size=c_sizeof(SectionMapEntry)
-        while len(section_map_memory) != 0:
-            section_map_entry = SectionMapEntry.from_buffer_copy(section_map_memory[:section_entry_size])
-            section_map_memory = section_map_memory[section_entry_size:]
-            self.section_map.append(section_map_entry)
-
+        section_entry_views = chunk(section_map_memory, c_sizeof(SectionMapEntry))
+        self.section_map = [SectionMapEntry.from_buffer_copy(view) for view in section_entry_views]
 
         file_info_start: int = section_map_end
         file_info_end: int = file_info_start + self.header.file_info_size

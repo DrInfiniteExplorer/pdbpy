@@ -38,7 +38,7 @@ class StreamDirectoryStream:
         # TODO: Make a small cache of (page_num, read_offset) and make reading of
         #  streams happen on-demand in relation to that?
         assert stream_index >= 0
-        assert stream_index < self.stream_count
+        assert stream_index < self.stream_count, f"Tried to open stream {stream_index} out of {self.stream_count} streams"
 
         byte_count, page_list = self._stream_sizes_and_page_lists[stream_index]
 

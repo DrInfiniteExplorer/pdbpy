@@ -17,7 +17,7 @@ class ImageSectionHeader(Structy):
 
     name                    : ctypes.c_char * 8
     addr_or_size            : AddressOrSize
-    virtual_address         : uint32_t
+    _virtual_address         : uint32_t
     size_of_raw_data        : uint32_t
     pointer_to_raw_data     : uint32_t
     pointer_to_relocations  : uint32_t
@@ -25,5 +25,8 @@ class ImageSectionHeader(Structy):
     number_of_relocations   : uint16_t
     number_of_line_numbers  : uint16_t
     characteristics         : uint32_t
+
+    @property
+    def virtual_address(self) -> int: return self._virtual_address # type: ignore
 
 assert ctypes.sizeof(ImageSectionHeader) == 8+4+4+4+4+4+4+2+2+4
