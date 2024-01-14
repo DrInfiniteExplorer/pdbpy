@@ -1,5 +1,5 @@
 
-from typing import Dict, Optional, Protocol, Self, TypeVar, runtime_checkable
+from typing import Dict, Optional, Self
 from dtypes.structify import structify, Structy
 from dtypes.typedefs import uint16_t
 

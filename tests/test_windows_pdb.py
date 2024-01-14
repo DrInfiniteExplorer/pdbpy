@@ -16,6 +16,7 @@ from pdbpy.streams.symbolsstream import PdbSymbolRecordStream
 from pdbpy.streams.typestream.pdbtypestream import PdbTypeStream
 from pdbpy.streams.typestream.records import FieldList, Member, Pointer, TypeStructLike
 from pdbpy.streams.typestream.records.base import PointerModeEnum, PointerTypeEnum, TypeProperties
+from pdbpy.streams.typestream.records.pdbtypehashstream import PdbTypeHashStream
 
 
 @pytest.fixture
@@ -45,7 +46,12 @@ def setup_info_stream(
 def setup_type_stream(setup_directory_stream: StreamDirectoryStream) -> PdbTypeStream:
     type_info_file = setup_directory_stream.get_stream_by_index(2)
     assert type_info_file is not None
-    type_stream = PdbTypeStream(type_info_file, setup_directory_stream, upfront_memory=False)
+    type_stream = PdbTypeStream(type_info_file, upfront_memory=False)
+
+    type_hash_file = setup_directory_stream.get_stream_by_index(int(type_stream.header.hash_stream_number))
+    hash_stream = PdbTypeHashStream(type_hash_file, type_stream.header)
+    type_stream.set_hash_stream(hash_stream)
+
     return type_stream
 
 

@@ -1,217 +1,147 @@
-from pdbpy.codeview.types import type_index
+from ctypes import sizeof as c_sizeof
+from typing import Iterable, List, Tuple
+
+from pdbpy.codeview.types import dynamic_type_index, type_index
 from pdbpy.msf import MultiStreamFileStream
-import pdbpy.utils.hash
+from pdbpy.streams.typestream.records.baseclass import BaseClass
+from pdbpy.streams.typestream.records.pdbtypehashstream import PdbTypeHashStream
+from pdbpy.streams.typestream.typestreamheader import PDBTypeStreamHeader
 
-from typing import List, Iterable, Tuple
-
+from .parse import parse_record
 from .records.base import PackedStructy
 from .records.codeviewrecordheader import CodeViewRecordHeader
 
-from ctypes import sizeof as c_sizeof
-from dtypes.structify import Structy, structify
-from dtypes.typedefs import uint32_t, int32_t, uint16_t
-import struct
-
-from .parse import parse_record
-
-
-@structify
-class OffsetSizePair(Structy):
-    offset     : int32_t
-    byte_count : int32_t
-
-@structify
-class PDBTypeStreamHeader(Structy):
-    version                 : uint32_t
-    header_size_bytes       : int32_t
-    ti_min                  : uint32_t # ti is type index?
-    ti_max                  : uint32_t
-    records_byte_count      : uint32_t
-    hash_stream_number      : uint16_t
-    aux_hash_stream_num     : uint16_t # ignore yolo
-    hash_key_size_bytes     : int32_t
-    buckets                 : uint32_t
-    hash_value_buffer       : OffsetSizePair
-    index_offset_buffer     : OffsetSizePair
-    hash_adjustment_buffer  : OffsetSizePair
-
-@structify
-class TypeIndexOffset(Structy):
-    ti          : type_index
-    byte_offset : uint32_t
-
-assert c_sizeof(TypeIndexOffset) == 8
-
 
 class PdbTypeStream:
-    def __init__(self, file: MultiStreamFileStream, stream_directory: 'StreamDirectoryStream', lookup_skip: int = 10, upfront_memory: bool = False, debug: bool =False):
+    file: MultiStreamFileStream | bytes
+    debug: bool
+
+    hash_stream: PdbTypeHashStream | None
+
+    header: PDBTypeStreamHeader
+    num_types: int
+
+    # These two are intended to be populated as types are iterated and found,
+    #  like a dynamic version of the second part of the hash stream.
+    # Not fully implemented yet.
+    lookup: List[int]
+    lookup_skip: int
+
+    def __init__(
+        self,
+        file: MultiStreamFileStream,
+        lookup_skip: int = 10,
+        upfront_memory: bool = False,
+        debug: bool = False,
+    ):
         """
         lookup_skip sets the "skip" value when adding offsets to the speedreader-cache;
          Every `lookup_skip` pairs of (type_index, stream_offset) is added to a cache.
         """
         self.file = file
-        self.stream_directory = stream_directory
+        self.debug = debug
+
+        self.hash_stream = None
 
         if upfront_memory:
             self.file = bytes(file)
 
-        header = PDBTypeStreamHeader.from_buffer_copy(self.file[:c_sizeof(PDBTypeStreamHeader)])
+        header = PDBTypeStreamHeader.from_buffer_copy(self.file[: c_sizeof(PDBTypeStreamHeader)])
 
         self.header = header
-        self.num_types = header.ti_max - header.ti_min
+        self.num_types = header.ti_max - header.ti_min  # type: ignore
 
         self.lookup_skip = lookup_skip
         self.lookup = []
 
-        self.debug = debug
-
-
-        assert header.hash_key_size_bytes == 4, f"Can't deal with non-4-byte hash indices (got {header.hash_key_size_bytes} !)"
-        assert header.hash_value_buffer.byte_count / header.hash_key_size_bytes in (self.num_types, 0), "yeet"
+        assert (
+            header.hash_key_size_bytes == 4
+        ), f"Can't deal with non-4-byte hash indices (got {header.hash_key_size_bytes} !)"
+        assert header.hash_value_buffer.byte_count / header.hash_key_size_bytes in (  # type: ignore
+            self.num_types,
+            0,
+        ), "yeet"
         assert header.hash_adjustment_buffer.byte_count == 0, "cant deal with this yet"
 
         header.index_offset_buffer.byte_count
 
-        #print("Loading hash")
-        #import time
-        #s = time.perf_counter()
-        self.hash_stream = stream_directory.get_stream_by_index(self.header.hash_stream_number)
-        
-        hash_data = bytes(self.hash_stream[header.hash_value_buffer.offset : header.hash_value_buffer.offset + header.hash_value_buffer.byte_count])
-        self.hash = [[] for _ in range(self.header.buckets)]
+        # hash_stream = stream_directory.get_stream_by_index(self.header.hash_stream_number)
+        # PdbTypeHashStream(
+        #   hash_stream,
+        #   start_ti=header.ti_min,
+        #   hash_start = header.hash_value_buffer,
+        #   index_start = header.index_offset_buffer,
+        #   hash_buckets=header.buckets.value,
+        # )
 
-        idx = header.ti_min
-        for (hashy,) in struct.iter_unpack("<I", hash_data):
-            self.hash[hashy].append(idx)
-            idx+=1
-        
-        #print("b", self.header.buckets)
-        #print("Loading hash completed after (s): ", time.perf_counter()-s)
+    def set_hash_stream(self, stream: PdbTypeHashStream) -> None:
+        self.hash_stream = stream
 
-
-        if debug:
-            for stream_offset, info in take(3, self.iter_ti_headers(self.header.ti_min)):
-                print(f"{stream_offset} - {info}")
-
-        #i = self.header.ti_min
-        ##i = 0x6c7eb
-        #for stream_offset, info in take('all', self.iter_ti_headers(i)):
-        #    print(f"Type index: {i:x} of {self.header.ti_max:x}")
-        #    i+=1
-        #    parse_record(self.file, stream_offset+2, record_type=info.record_type, record_size_bytes = info.size_bytes, debug=debug)
-        #    print()
-
-    def get_hash_for_ti(self, ti : type_index):
-        """
-        Reads the hash from the hash stream.
-        The hash is the "bucket modulo limited" hash as written into the stream.
-        """
-        offset = self.header.hash_value_buffer.offset
-        # 4 == see assert in __init__
-        offset += (ti - self.header.ti_min) * 4
-        return struct.unpack("<I", self.hash_stream[offset : offset + 4])[0]
-    
-    def get_ti_for_string_by_hash(self, string : str) -> List[type_index]:
-        """
-        Given a string as a name, determine which hash-bucket the name fits in,
-         and return a list of type_index that _might_ match the string.
-        """
-        hashy = pdbpy.utils.hash.get_hash_for_string(string)
-        bucket = hashy % self.header.buckets
-        return self.hash[bucket]
-    
-    def get_ti_and_record_for_name(self, /, name : str) -> Iterable[Tuple[type_index, PackedStructy]]:
+    def get_ti_and_record_for_name(self, /, name: str) -> Iterable[Tuple[type_index, PackedStructy]]:
         """
         Iterates the list of potential TIs in the same bucket as the name.
         If records are found matching the given name, the TI and record are yielded
         """
-        potential_ti = self.get_ti_for_string_by_hash(name)
+        assert self.hash_stream
+
+        potential_ti = self.hash_stream.get_possible_ti_for_string_by_hash(name)
         for ti in potential_ti:
             record = self.get_by_type_index(ti)
-            if getattr(record, 'name', None) == name:
+            if getattr(record, "name", None) == name:
                 yield (ti, record)
 
-        
-    
-    def get_structy_by_name(self, /, name : str, skip_forward = True) -> 'tuple[type_index, structyboi]':
-        #print(f"Searching for {name} / {unique_name}")
+    def get_structy_by_name(self, /, name: str, skip_forward: bool = True) -> Tuple[type_index, BaseClass]:
+        assert self.hash_stream
 
-        hashy = pdbpy.utils.hash.get_hash_for_string(name)
-        bucket = hashy % self.header.buckets
-        for ti in self.hash[bucket]:
+        potential_ti = self.hash_stream.get_possible_ti_for_string_by_hash(name)
+        for ti in potential_ti:
             record = self.get_by_type_index(ti)
             if record is None or record.record_type not in structy_types:
                 continue
-            if name == getattr(record, 'name', None):
+            if name == getattr(record, "name", None):
                 return ti, record
         assert False, f"yolo? couldn't find {name} 🤔"
 
         assert name is not None or unique_name is not None, "Need at least a name of any kind!!"
         for stream_offset, info in self.iter_ti_headers():
             if info.record_type in structy_types:
-                _, typ = parse_record(self.file, stream_offset+2, record_type=info.record_type, record_size_bytes = info.size_bytes)
-                if name is not None and name != typ.name: continue
-                if unique_name is not None and unique_name != typ.unique_name: continue
+                _, typ = parse_record(
+                    self.file, stream_offset + 2, record_type=info.record_type, record_size_bytes=info.size_bytes
+                )
+                if name is not None and name != typ.name:
+                    continue
+                if unique_name is not None and unique_name != typ.unique_name:
+                    continue
 
                 if skip_forward and typ.properties.is_forward_definition:
                     continue
-                #print("gottem")
+                # print("gottem")
                 return info.ti, typ
-    
-    def get_by_type_index(self, ti : type_index):
+
+    def get_by_type_index(self, ti: type_index):
         stream_offset, info = self.get_ti_info(ti)
-        _, typ = parse_record(self.file, stream_offset+2, record_type=info.record_type, record_size_bytes = info.size_bytes)
+        _, typ = parse_record(
+            self.file, stream_offset + 2, record_type=info.record_type, record_size_bytes=info.size_bytes
+        )
         return typ
 
-    
-    def get_ti_info(self, TI : type_index):
-        return next(self.iter_ti_headers(start_ti = TI))
-    
-    def get_closest_start_pos_for_ti(self, ti) -> 'tuple[type_index_zero_based, int]':
-        """
-        Returns the closest stored lookup position for a given type_index.
+    def get_ti_info(self, TI: type_index):
+        return next(self.iter_ti_headers(start_ti=TI))
 
-        Returns a (idx, stream_byte_offset) with the `idx` as 0-start, not a type_index
-        """
-        assert ti >= self.header.ti_min, f"{ti} >= {self.header.ti_min}"
-        assert ti < self.header.ti_max, f"{ti} < {self.header.ti_max}"
+    def dynamic_to_absolute(self, dynamic_index: dynamic_type_index) -> type_index:
+        return dynamic_index + self.header.ti_min  # type: ignore
 
+    def absolute_to_dynamic(self, absolute_index: type_index) -> dynamic_type_index:
+        return absolute_index - self.header.ti_min  # type: ignore
 
-        ratio = (ti - self.header.ti_min) / (self.num_types)
+    def get_closest_start_pos_for_ti(self, ti: type_index) -> tuple[dynamic_type_index, int]:
+        assert self.hash_stream
 
-        io_sizeof = c_sizeof(TypeIndexOffset)
-        io_size = self.header.index_offset_buffer.byte_count        
-        io_count = io_size / io_sizeof
+        ti, offset = self.hash_stream.get_closest_start_pos_for_ti(ti)
+        dynamic_index = self.absolute_to_dynamic(ti)
+        return dynamic_index, offset + c_sizeof(PDBTypeStreamHeader)
 
-        guess_index = io_count * ratio
-        guess_index = int(guess_index) # // 1 # stupid way to floor ¯\_(ツ)_/¯
-
-        def get_io(idx):
-            offset = self.header.index_offset_buffer.offset + io_sizeof * idx
-            guess = TypeIndexOffset.from_buffer_copy(self.hash_stream[offset : offset + io_sizeof])
-            return guess
-        
-        guess = get_io(guess_index)
-
-        if guess_index != io_count-1 and guess_index != 0 and guess.ti != ti:
-            if guess.ti < ti:
-                # advance until not (limit || above)
-                next_guess = guess
-                while next_guess.ti < ti:
-                    guess = next_guess
-                    guess_index += 1                    
-                    next_guess = get_io(guess_index)
-            else:
-                # retreat until 0 or below
-                while guess.ti > ti:
-                    guess_index -= 1
-                    guess = get_io(guess_index)
-
-        #print(f"Starting search at {guess}")
-        return guess.ti - self.header.ti_min, guess.byte_offset + c_sizeof(PDBTypeStreamHeader)
-
-
-    def iter_ti_headers(self, start_ti : type_index = None) -> tuple[int, CodeViewRecordHeader]:
+    def iter_ti_headers(self, start_ti: type_index = None) -> tuple[int, CodeViewRecordHeader]:
         type_size = c_sizeof(CodeViewRecordHeader)
         extra_bytes_to_advance = CodeViewRecordHeader.size_bytes.size
         if start_ti is None:
@@ -220,10 +150,10 @@ class PdbTypeStream:
             pos = c_sizeof(PDBTypeStreamHeader)
         else:
             assert start_ti >= self.header.ti_min, f"{start_ti} >= {self.header.ti_min}"
-            assert start_ti < self.header.ti_max,  f"{start_ti} < {self.header.ti_max}"
+            assert start_ti < self.header.ti_max, f"{start_ti} < {self.header.ti_max}"
             yield_start_index = start_ti - self.header.ti_min
             start_index, pos = self.get_closest_start_pos_for_ti(start_ti)
-            
+
         for idx in range(start_index, self.num_types):
             if idx % self.lookup_skip == 0:
                 lookup_idx = idx // self.lookup_skip
@@ -236,7 +166,5 @@ class PdbTypeStream:
                 yield pos, info
             pos += extra_bytes_to_advance + info.size_bytes
 
-    #def __repr__(self):
+    # def __repr__(self):
     #    return str(self.__dict__)
-
-    

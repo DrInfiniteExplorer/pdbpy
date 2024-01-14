@@ -78,7 +78,7 @@ def read_stringz(mem: memoryview) -> Tuple[str, int]:
             joined = bytes(stuff)
             try:
                 return joined.decode('utf8'), offset
-            except UnicodeDecodeError as e:
+            except UnicodeDecodeError:
                 return joined, offset
         stuff.append(byte)
 
