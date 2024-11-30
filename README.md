@@ -8,7 +8,7 @@ I want to be able to parse PDB files using python. I want to understand their st
 There are other libraries and implementations (see below). This one differs in that it works
  out of the box, and it lazily loads only what is requested. Working with a file 1GB+ large
  and only want to know how to parse a single structure? Only want to know the address of a
- symbol? No problem, only the minumum will be loaded!
+ symbol? No problem, only the minImum will be loaded!
 
 The PDB is memory-mapped. The underlying MSF format makes data possibly non-contiguous,
  but using the `memorywrapper` library that becomes (mostly) a non-issue, as it can
